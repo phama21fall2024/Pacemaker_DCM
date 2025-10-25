@@ -29,10 +29,3 @@ class AppController:
 
         # Create and display main Application
         self.current_screen = Application(self.root, username, self.db, self.show_welcome)
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    root.title("Pacemaker DCM")
-    root.geometry("600x400")
-    app = AppController(root)
-    root.mainloop()

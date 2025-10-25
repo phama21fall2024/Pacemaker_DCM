@@ -1,6 +1,7 @@
 {
     "users": {
-        "Tommy": "1234"
+        "Tommy": "1234",
+        "Group1": "1234"
     },
     "parameters": {},
     "states": {}
