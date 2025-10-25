@@ -4,39 +4,56 @@ import serial.tools.list_ports
 
 class Application:
     def __init__(self, root, username, db, on_logout):
-        self.root = root
-        self.username = username
-        self.db = db
-        self.on_logout = on_logout
-        self.serial_port = None
-        self.current_serial = None
+        # Private attributes
+        self.__root = root
+        self.__username = username
+        self.__db = db
+        self.__on_logout = on_logout
+        self.__serial_port = None
+        self.__current_serial = None
 
-        for widget in self.root.winfo_children():
+        # Clear existing widgets (if any) before creating this screen
+        for widget in self.__root.winfo_children():
             widget.destroy()
 
-        self.root.title("Pacemaker DCM")
-        self.root.geometry("800x600")
-        self.root.resizable(False, False)
+        # Configure main window
+        self.__root.title("Pacemaker DCM")
+        self.__root.geometry("800x600")
+        self.__root.resizable(False, False)
 
-        # Connection Status Display
-        self.status_frame = tk.Frame(self.root)
-        self.status_frame.place(relx=0, rely=0.05, anchor="nw")
+        # Initialize UI sections
+        self.__create_status_display()
+        self.__create_param_display()
+        self.__create_state_display()
 
-        tk.Label(self.status_frame, text="Device Connection Status:", font=("Arial", 12, "bold")).pack(side="left", padx=10)
-        self.led_canvas = tk.Canvas(self.status_frame, width=20, height=20, highlightthickness=0)
-        self.led_circle = self.led_canvas.create_oval(2, 2, 18, 18, fill="red")
-        self.led_canvas.pack(side="left", padx=5)
-        self.status_label = tk.Label(self.status_frame, text="Not Connected", fg="red", font=("Arial", 12, "bold"))
-        self.status_label.pack(side="left", padx=5)
+        # Start device check loop
+        self.__check_device()
 
-        # Parameters Input Display
-        self.param_frame = tk.Frame(self.root)
-        self.param_frame.place(relx=0.25, rely=0.5, anchor="center")
+    def __create_status_display(self):
+        """Creates the top connection status bar with LED indicator."""
+        self.__status_frame = tk.Frame(self.__root)
+        self.__status_frame.place(relx=0, rely=0.05, anchor="nw")
 
-        tk.Label(self.param_frame, text="Parameters", fg="black", font=("Arial", 12, "bold")).grid(row=0, column=0, columnspan=2, pady=(0, 11))
+        tk.Label(self.__status_frame, text="Device Connection Status:", font=("Arial", 12, "bold")).pack(side="left", padx=10)
 
-        # Initiate Required Parameters
-        self.parameters = {
+        # LED indicator for connection
+        self.__led_canvas = tk.Canvas(self.__status_frame, width=20, height=20, highlightthickness=0)
+        self.__led_circle = self.__led_canvas.create_oval(2, 2, 18, 18, fill="red")
+        self.__led_canvas.pack(side="left", padx=5)
+
+        # Status text beside LED
+        self.__status_label = tk.Label(self.__status_frame, text="Not Connected", fg="red", font=("Arial", 12, "bold"))
+        self.__status_label.pack(side="left", padx=5)
+
+    def __create_param_display(self):
+        """Creates the middle section for pacemaker parameter input."""
+        self.__param_frame = tk.Frame(self.__root)
+        self.__param_frame.place(relx=0.25, rely=0.5, anchor="center")
+
+        tk.Label(self.__param_frame, text="Parameters", fg="black", font=("Arial", 12, "bold")).grid(row=0, column=0, columnspan=2, pady=(0, 11))
+
+        # Parameters
+        self.__parameters = {
             "Lower Rate Limit": tk.StringVar(),
             "Upper Rate Limit": tk.StringVar(),
             "Atrial Amplitude": tk.StringVar(),
@@ -47,59 +64,62 @@ class Application:
             "ARP": tk.StringVar()
         }
 
-        exist = self.db.get_parameters(self.username)
+        # Load existing parameters (if saved for this user)
+        exist = self.__db.get_parameters(self.__username)
         if exist:
-            for param, var in self.parameters.items():
+            for param, var in self.__parameters.items():
                 if param in exist:
                     var.set(str(exist[param]))
 
+        # Display input fields for all parameters
         row = 1
-        for param, var in self.parameters.items():
-            tk.Label(self.param_frame, text=param, font=("Arial", 11)).grid(row=row, column=0, sticky="e", padx=10, pady=4)
-            tk.Entry(self.param_frame, textvariable=var, width=25).grid(row=row, column=1, padx=10, pady=4)
+        for param, var in self.__parameters.items():
+            tk.Label(self.__param_frame, text=param, font=("Arial", 11)).grid(row=row, column=0, sticky="e", padx=10, pady=4)
+            tk.Entry(self.__param_frame, textvariable=var, width=25).grid(row=row, column=1, padx=10, pady=4)
             row += 1
 
-        tk.Button(self.param_frame, text="Save", command=self.save_parameters, bg="lightgreen", width=12).grid(row=row, column=0, pady=15, sticky="e")
-        tk.Button(self.param_frame, text="Logout", command=self.logout, bg="lightcoral", width=12).grid(row=row, column=2, pady=15, sticky="w")
+        # Save and Logout buttons
+        tk.Button(self.__param_frame, text="Save", command=self.__save_parameters, bg="lightgreen", width=12).grid(row=row, column=0, pady=15, sticky="e")
+        tk.Button(self.__param_frame, text="Logout", command=self.__logout, bg="lightcoral", width=12).grid(row=row, column=2, pady=15, sticky="w")
 
-        # States Displays
-        self.state_frame = tk.Frame(self.root)
-        self.state_frame.place(relx=0.75, rely=0.45, anchor="center")
-        tk.Label(self.state_frame, text="States", fg="black", font=("Arial", 12, "bold")).pack(pady=(0, 10))
+    def __create_state_display(self):
+        """Creates the right section for selecting pacing modes (states)."""
+        self.__state_frame = tk.Frame(self.__root)
+        self.__state_frame.place(relx=0.75, rely=0.45, anchor="center")
 
-        # Displays All Buttons  
-        self.state_buttons = {}
+        tk.Label(self.__state_frame, text="States", fg="black", font=("Arial", 12, "bold")).pack(pady=(0, 10))
+
+        # Pacing modes button
+        self.__state_buttons = {}
         for name in ["AOO", "VOO", "AAI", "VVI"]:
-            btn = tk.Button(self.state_frame, text=name, width=15, height=2, bg="white", font=("Arial", 10, "bold"),
-                            command=lambda n=name: self.select_state(n))
+            btn = tk.Button(self.__state_frame, text=name, width=15, height=2, bg="white", font=("Arial", 10, "bold"),
+                            command=lambda n=name: self.__select_state(n))
             btn.pack(pady=10)
-            self.state_buttons[name] = btn
+            self.__state_buttons[name] = btn
 
-        last_state = self.db.get_state(self.username)
-        if last_state and last_state in self.state_buttons:
-            self.select_state(last_state)
+        # Restore the last selected pacing mode (if saved)
+        last_state = self.__db.get_state(self.__username)
+        if last_state and last_state in self.__state_buttons:
+            self.__select_state(last_state)
 
-        # Start Checking Device Connection
-        self.check_device()
+    # PRIVATE LOGIC METHODS  
 
-    # Select States
-    def select_state(self, name):
-        # Checks Each State Button
-        for state, button in self.state_buttons.items():
-            # If State is selected, background is highlighted green
+    def __select_state(self, name):
+        # Highlights selecting pacing mode
+        for state, button in self.__state_buttons.items():
             button.config(bg="lightgreen" if state == name else "white")
-        self.db.save_state(self.username, name) # Saves The State to the user
+        self.__db.save_state(self.__username, name)
 
-
-    def save_parameters(self):
-        saved_data = {param: var.get() for param, var in self.parameters.items()}
-        if not self.validate_parameters(saved_data):
+    def __save_parameters(self):
+        # Validate then save the parameters into json
+        saved_data = {param: var.get() for param, var in self.__parameters.items()}
+        if not self.__validate_parameters(saved_data):
             return
-        _, msg = self.db.save_parameters(self.username, saved_data)
+        _, msg = self.__db.save_parameters(self.__username, saved_data)
         messagebox.showinfo("Saved", msg)
 
-    def validate_parameters(self, params):
-        #Sets Limits for each parameters
+    def __validate_parameters(self, params):
+        # Ensures parameters falls within the limits
         limits = {
             "Lower Rate Limit": (30, 175),
             "Upper Rate Limit": (50, 175),
@@ -110,41 +130,43 @@ class Application:
             "VRP": (150, 500),
             "ARP": (150, 500)
         }
-
-        # For each parameters and its value in the inputs
+        
         for param, value in params.items():
             try:
-                val = float(value) # Changes value inputted into a float
-            except ValueError:
-                messagebox.showerror("Invalid Input", f"{param} must be a number.") # Error when input is not a number
+                val = float(value)
+            except ValueError: # If the parameter is not a number
+                messagebox.showerror("Invalid Input", f"{param} must be a number.")
                 return False
-            low, high = limits[param] # Take low and high based on 
-            if not (low <= val <= high):
+            low, high = limits[param]
+            if not (low <= val <= high): # If parameter is out of range
                 messagebox.showerror("Out of Range", f"{param} must be between {low} and {high}.")
                 return False
         return True
 
-    def check_device(self):
+    def __check_device(self):
+        # Checks for device every 2 seconds 
         ports = list(serial.tools.list_ports.comports())
         if ports:
             serial_number = getattr(ports[0], "serial_number", None)
-            if serial_number != self.current_serial:
-                self.current_serial = serial_number
-                self.set_led(True)
+            if serial_number != self.__current_serial: #If checks if the current serial number is the same as the new serial number
+                self.__current_serial = serial_number
+                self.__set_led(True) # Sets LED if that's true
         else:
-            self.current_serial = None
-            self.set_led(False)
-        self.root.after(2000, self.check_device)
+            self.__current_serial = None
+            self.__set_led(False)
+        self.__root.after(2000, self.__check_device)
 
-    def set_led(self, connected):
+    def __set_led(self, connected):
+        # Sets LED based on connection state
         if connected:
-            self.led_canvas.itemconfig(self.led_circle, fill="green")
-            self.status_label.config(text="Connected", fg="green")
+            self.__led_canvas.itemconfig(self.__led_circle, fill="green")
+            self.__status_label.config(text="Connected", fg="green")
         else:
-            self.led_canvas.itemconfig(self.led_circle, fill="red")
-            self.status_label.config(text="Not Connected", fg="red")
+            self.__led_canvas.itemconfig(self.__led_circle, fill="red")
+            self.__status_label.config(text="Not Connected", fg="red")
 
-    def logout(self):
-        if self.serial_port and getattr(self.serial_port, "is_open", False):
-            self.serial_port.close()
-        self.on_logout()
+    def __logout(self):
+        # Handles log out and close all serial port
+        if self.__serial_port and getattr(self.__serial_port, "is_open", False):
+            self.__serial_port.close()
+        self.__on_logout()
