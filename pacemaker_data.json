@@ -3,6 +3,19 @@
         "Tommy": "1234",
         "Group1": "1234"
     },
-    "parameters": {},
-    "states": {}
+    "parameters": {
+        "Group1": {
+            "Lower Rate Limit": "30",
+            "Upper Rate Limit": "50",
+            "Atrial Amplitude": "0.5",
+            "Atrial Pulse Width": "0.05",
+            "Ventricular Amplitude": "0.5",
+            "Ventricular Pulse Width": "0.05",
+            "VRP": "150",
+            "ARP": "150"
+        }
+    },
+    "states": {
+        "Group1": "VOO"
+    }
 }

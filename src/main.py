@@ -25,6 +25,7 @@ class Application:
         self.__create_status_display()
         self.__create_param_display()
         self.__create_state_display()
+        self.__create_serial_display()
 
         # Start device check loop
         self.__check_device()
@@ -102,6 +103,11 @@ class Application:
         if last_state and last_state in self.__state_buttons:
             self.__select_state(last_state)
 
+    def __create_serial_display(self):
+        # Displays the serial number of the hardware
+        self.__serial_label = tk.Label(self.__root, text="Serial: None", font=("Arial", 10, "italic"), fg="gray")
+        self.__serial_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)  # bottom-right corner
+
     # PRIVATE LOGIC METHODS  
 
     def __select_state(self, name):
@@ -148,22 +154,30 @@ class Application:
         ports = list(serial.tools.list_ports.comports())
         if ports:
             serial_number = getattr(ports[0], "serial_number", None)
-            if serial_number != self.__current_serial: #If checks if the current serial number is the same as the new serial number
+            if serial_number != self.__current_serial: #Checks if the current serial number is the same as the new serial number
                 self.__current_serial = serial_number
-                self.__set_led(True) # Sets LED if that's true
+                self.__set_led(True) 
         else:
             self.__current_serial = None
             self.__set_led(False)
+        self.__update_serial_label()
         self.__root.after(2000, self.__check_device)
 
     def __set_led(self, connected):
         # Sets LED based on connection state
-        if connected:
+        if connected :
             self.__led_canvas.itemconfig(self.__led_circle, fill="green")
             self.__status_label.config(text="Connected", fg="green")
         else:
             self.__led_canvas.itemconfig(self.__led_circle, fill="red")
             self.__status_label.config(text="Not Connected", fg="red")
+
+    def __update_serial_label(self):
+        # Update the serial labelling
+        if self.__current_serial:
+            self.__serial_label.config(text=f"Serial: {self.__current_serial}", fg="black")
+        else:
+            self.__serial_label.config(text="Serial: None", fg="gray")
 
     def __logout(self):
         # Handles log out and close all serial port
