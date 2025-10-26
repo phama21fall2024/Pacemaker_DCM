@@ -2,10 +2,10 @@ import tkinter as tk
 from tkinter import messagebox
 
 class WelcomeScreen:
-    def __init__(self, root, db, on_login_success):
+    def __init__(self, root, db, login_comp):
         self._root = root
         self._db = db
-        self._on_login_success = on_login_success
+        self._login_comp = login_comp
 
         # Create a frame but don't destroy anything yet
         self._frame = tk.Frame(self._root)
@@ -51,7 +51,7 @@ class WelcomeScreen:
         # Make sures that the user is valid, function in datamanager
         if self._db.validate_user(username, password):
             self._frame.destroy()
-            self._on_login_success(username)
+            self._login_comp(username)
         else:
             messagebox.showerror("Error", "Invalid credentials")
 

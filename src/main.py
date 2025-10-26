@@ -3,12 +3,12 @@ from tkinter import messagebox
 import serial.tools.list_ports
 
 class Application:
-    def __init__(self, root, username, db, on_logout):
+    def __init__(self, root, username, db, logout):
         # Private attributes
         self.__root = root
         self.__username = username
         self.__db = db
-        self.__on_logout = on_logout
+        self.__logout_comp = logout
         self.__serial_port = None
         self.__current_serial = None
 
@@ -183,4 +183,4 @@ class Application:
         # Handles log out and close all serial port
         if self.__serial_port and getattr(self.__serial_port, "is_open", False):
             self.__serial_port.close()
-        self.__on_logout()
+        self.__logout_comp()
