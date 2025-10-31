@@ -31,7 +31,6 @@ class Application:
         self.__check_device()
 
     def __create_status_display(self):
-        """Creates the top connection status bar with LED indicator."""
         self.__status_frame = tk.Frame(self.__root)
         self.__status_frame.place(relx=0, rely=0.05, anchor="nw")
 
@@ -47,7 +46,6 @@ class Application:
         self.__status_label.pack(side="left", padx=5)
 
     def __create_param_display(self):
-        """Creates the middle section for pacemaker parameter input."""
         self.__param_frame = tk.Frame(self.__root)
         self.__param_frame.place(relx=0.25, rely=0.5, anchor="center")
 
@@ -84,7 +82,6 @@ class Application:
         tk.Button(self.__param_frame, text="Logout", command=self.__logout, bg="lightcoral", width=12).grid(row=row, column=2, pady=15, sticky="w")
 
     def __create_state_display(self):
-        """Creates the right section for selecting pacing modes (states)."""
         self.__state_frame = tk.Frame(self.__root)
         self.__state_frame.place(relx=0.75, rely=0.45, anchor="center")
 
