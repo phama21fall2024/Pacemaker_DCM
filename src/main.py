@@ -64,7 +64,7 @@ class Application:
         }
 
         # Load existing parameters (if saved for this user)
-        exist = self.__db.get_parameters(self.__username)
+        exist = self.__db.get_parameters(self.__username)   
         if exist:
             for param, var in self.__parameters.items():
                 if param in exist:
