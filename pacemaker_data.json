@@ -1,0 +1,62 @@
+{
+    "users": {
+        "Group": "12345"
+    },
+    "parameters": {
+        "Group": {
+            "default": {
+                "Lower Rate Limit": "100",
+                "Upper Rate Limit": "110",
+                "Atrial Amplitude": "0.5",
+                "Atrial Pulse Width": "0.05",
+                "Ventricular Amplitude": "0.5",
+                "Ventricular Pulse Width": "0.05",
+                "VRP": "150",
+                "ARP": "150"
+            },
+            "VOO": {
+                "Lower Rate Limit": "",
+                "Upper Rate Limit": "",
+                "Atrial Amplitude": "",
+                "Atrial Pulse Width": "",
+                "Ventricular Amplitude": "",
+                "Ventricular Pulse Width": "",
+                "VRP": "",
+                "ARP": ""
+            },
+            "AOO": {
+                "Lower Rate Limit": "100",
+                "Upper Rate Limit": "110",
+                "Atrial Amplitude": "0.5",
+                "Atrial Pulse Width": "0.05",
+                "Ventricular Amplitude": "0.5",
+                "Ventricular Pulse Width": "0.05",
+                "VRP": "150",
+                "ARP": "150"
+            },
+            "AAI": {
+                "Lower Rate Limit": "",
+                "Upper Rate Limit": "",
+                "Atrial Amplitude": "",
+                "Atrial Pulse Width": "",
+                "Ventricular Amplitude": "",
+                "Ventricular Pulse Width": "",
+                "VRP": "",
+                "ARP": ""
+            },
+            "VVI": {
+                "Lower Rate Limit": "",
+                "Upper Rate Limit": "",
+                "Atrial Amplitude": "",
+                "Atrial Pulse Width": "",
+                "Ventricular Amplitude": "",
+                "Ventricular Pulse Width": "",
+                "VRP": "",
+                "ARP": ""
+            }
+        }
+    },
+    "states": {
+        "Group": "AAI"
+    }
+}

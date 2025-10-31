@@ -111,7 +111,26 @@ class Application:
         # Highlights selecting pacing mode
         for state, button in self.__state_buttons.items():
             button.config(bg="lightgreen" if state == name else "white")
+            
+        last_state = self.__db.get_state(self.__username)
+
+        if last_state:
+            saved_data = {param: var.get() for param, var in self.__parameters.items()}
+            self.__db.save_parameters(self.__username, saved_data, state_name=last_state)
+
+        # Update the current selected state in the database
         self.__db.save_state(self.__username, name)
+
+        # Load parameters for the newly selected state
+        state_params = self.__db.get_parameters(self.__username, state_name=name)
+        if state_params:
+            # Load existing parameters for this pacing mode
+            for param, var in self.__parameters.items():
+                var.set(str(state_params.get(param, "")))
+        else:
+            # Clear all fields if no data exists for this mode yet
+            for var in self.__parameters.values():
+                var.set("")
 
     def __save_parameters(self):
         # Validate then save the parameters into json

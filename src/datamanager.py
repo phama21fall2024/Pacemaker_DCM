@@ -24,7 +24,7 @@ class DataManager:
             json.dump(self.data, f, indent=4) # Saves data into json
 
     def add_user(self, username, password):
-        if len(self.data["users"]) >= 10: # Checks if user exceeds 10
+        if len(self.data["users"]) >= 3: # Checks if user exceeds 10
             return False, "User limit reached (10)"
 
         if username in self.data["users"]: # Checks if user already existed
@@ -39,16 +39,16 @@ class DataManager:
         # hashed_pw = hashlib.sha256(password.encode()).hexdigest() # Make sure the hash password is correct with the saved hashed
         return self.data["users"].get(username) == password
 
-    def save_parameters(self, username, params):
-        if username not in self.data["users"]: 
-            return False, "User not found"
-        
-        self.data["parameters"][username] = params # Saves the parameter to username
+    def save_parameters(self, username, params, state_name="default"):
+        if username not in self.data["parameters"]:
+            self.data["parameters"][username] = {}
+        self.data["parameters"][username][state_name] = params
         self.save_data()
-        return True, "Parameters saved"
+        return True, f"Parameters for {state_name} saved successfully."
 
-    def get_parameters(self, username):
-        return self.data["parameters"].get(username, {}) # Gets the parameter from the username
+    def get_parameters(self, username, state_name="default"):
+        return self.data["parameters"].get(username, {}).get(state_name, None)
+
 
     def save_state(self, username, state):
         if username not in self.data["users"]:
