@@ -137,16 +137,28 @@ class Application:
             "ARP": (150, 500)
         }
         
+        numeric_values = {}
         for param, value in params.items():
             try:
                 val = float(value)
-            except ValueError: # If the parameter is not a number
+            except ValueError:  # If the parameter is not a number
                 messagebox.showerror("Invalid Input", f"{param} must be a number.")
                 return False
+
             low, high = limits[param]
-            if not (low <= val <= high): # If parameter is out of range
+            if not (low <= val <= high):  # If parameter is out of range
                 messagebox.showerror("Out of Range", f"{param} must be between {low} and {high}.")
                 return False
+
+            numeric_values[param] = val
+
+        if numeric_values["Lower Rate Limit"] >= numeric_values["Upper Rate Limit"]: # Checks if lower limit is higher than upper limit
+            messagebox.showerror(
+                "Invalid Limits",
+                "Lower Rate Limit must be less than Upper Rate Limit."
+            )
+            return False
+
         return True
 
     def __check_device(self):
