@@ -12,6 +12,13 @@ class Application:
         self.__serial_port = None
         self.__current_serial = None
 
+        self.__mode_parameters = {
+            "AOO": ["Lower Rate Limit", "Upper Rate Limit", "Atrial Amplitude", "Atrial Pulse Width"],
+            "VOO": ["Lower Rate Limit", "Upper Rate Limit", "Ventricular Amplitude", "Ventricular Pulse Width"],
+            "AAI": ["Lower Rate Limit", "Upper Rate Limit", "Atrial Amplitude", "Atrial Pulse Width", "ARP"],
+            "VVI": ["Lower Rate Limit", "Upper Rate Limit", "Ventricular Amplitude", "Ventricular Pulse Width", "VRP"]
+        }
+
         # Clear existing widgets (if any) before creating this screen
         for widget in self.__root.winfo_children():
             widget.destroy()
@@ -79,6 +86,7 @@ class Application:
 
         # Save and Logout buttons
         tk.Button(self.__param_frame, text="Save", command=self.__save_parameters, bg="lightgreen", width=12).grid(row=row, column=0, pady=15, sticky="e")
+        tk.Button(self.__param_frame, text="Egram", command=self.__open_egram, bg="lightblue", width=12).grid(row=row, column=1, pady=15, sticky="n")
         tk.Button(self.__param_frame, text="Logout", command=self.__logout, bg="lightcoral", width=12).grid(row=row, column=2, pady=15, sticky="w")
 
     def __create_state_display(self):
@@ -107,6 +115,14 @@ class Application:
 
     # PRIVATE LOGIC METHODS  
 
+    def __open_egram(self):
+        try:
+            import egram_ui
+            egram_ui.open_egram_window(self.__root)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to open Egram UI:\n{e}")
+
+
     def __select_state(self, name):
         # Highlights selecting pacing mode
         for state, button in self.__state_buttons.items():
@@ -133,15 +149,29 @@ class Application:
                 var.set("")
 
     def __save_parameters(self):
-        # Validate then save the parameters into json
-        saved_data = {param: var.get() for param, var in self.__parameters.items()}
-        if not self.__validate_parameters(saved_data):
+        # Get current pacing mode
+        current_state = self.__db.get_state(self.__username) or "default"
+        allowed_params = self.__mode_parameters.get(current_state, [])
+
+        # Collect ALL parameter values (including disallowed ones)
+        all_data = {param: var.get() for param, var in self.__parameters.items()}
+
+        # Validate — throws error if invalid params exist for current mode
+        if not self.__validate_parameters(all_data):
             return
-        _, msg = self.__db.save_parameters(self.__username, saved_data)
-        messagebox.showinfo("Saved", msg)
+
+        # After validation succeeds, save only the allowed parameters
+        saved_data = {
+            param: all_data[param] for param in allowed_params
+        }
+
+        _, msg = self.__db.save_parameters(self.__username, saved_data, state_name=current_state)
+        messagebox.showinfo("Saved", f"{msg} (Mode: {current_state})")
+
+
 
     def __validate_parameters(self, params):
-        # Ensures parameters falls within the limits
+        #Normal parameter limits
         limits = {
             "Lower Rate Limit": (30, 175),
             "Upper Rate Limit": (50, 175),
@@ -152,30 +182,46 @@ class Application:
             "VRP": (150, 500),
             "ARP": (150, 500)
         }
-        
+
+        current_mode = self.__db.get_state(self.__username) or "default"
+        allowed_params = self.__mode_parameters.get(current_mode, [])
         numeric_values = {}
+
+        #Throw an error if an invalid parameter exists for this mode
+        for param in params.keys():
+            if param not in allowed_params and params[param] != "":
+                messagebox.showerror(
+                    "Invalid Parameter",
+                    f"{param} is not allowed in {current_mode} mode."
+                )
+                return False
+
+        #Validate all allowed parameters numerically and range-wise
         for param, value in params.items():
+            if param not in allowed_params:
+                continue  # skip irrelevant params silently
+
             try:
                 val = float(value)
-            except ValueError:  # If the parameter is not a number
+            except ValueError:
                 messagebox.showerror("Invalid Input", f"{param} must be a number.")
                 return False
 
             low, high = limits[param]
-            if not (low <= val <= high):  # If parameter is out of range
+            if not (low <= val <= high):
                 messagebox.showerror("Out of Range", f"{param} must be between {low} and {high}.")
                 return False
 
             numeric_values[param] = val
 
-        if numeric_values["Lower Rate Limit"] >= numeric_values["Upper Rate Limit"]: # Checks if lower limit is higher than upper limit
-            messagebox.showerror(
-                "Invalid Limits",
-                "Lower Rate Limit must be less than Upper Rate Limit."
-            )
-            return False
+        # Lower < Upper Rate Limit
+        if "Lower Rate Limit" in numeric_values and "Upper Rate Limit" in numeric_values:
+            if numeric_values["Lower Rate Limit"] >= numeric_values["Upper Rate Limit"]:
+                messagebox.showerror("Invalid Limits", "Lower Rate Limit must be less than Upper Rate Limit.")
+                return False
 
         return True
+
 
     def __check_device(self):
         # Checks for device every 2 seconds 
