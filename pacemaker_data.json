@@ -5,24 +5,48 @@
     "parameters": {
         "Group28": {
             "AOO": {
-                "Lower Rate Limit": "40",
-                "Upper Rate Limit": "50",
-                "Atrial Amplitude": "0.5",
-                "Atrial Pulse Width": "0.05"
+                "Lower Rate Limit": 30.0,
+                "Upper Rate Limit": 50.0,
+                "Atrial Amplitude": 0.5,
+                "Atrial Pulse Width": 0.05,
+                "Ventricular Amplitude": 0.5,
+                "Ventricular Pulse Width": 0.05,
+                "VRP": 150.0,
+                "ARP": 150.0
             },
             "VOO": {
-                "Lower Rate Limit": "",
-                "Upper Rate Limit": "",
-                "Atrial Amplitude": "",
-                "Atrial Pulse Width": "",
-                "Ventricular Amplitude": "",
-                "Ventricular Pulse Width": "",
-                "VRP": "",
-                "ARP": ""
+                "Lower Rate Limit": 30.0,
+                "Upper Rate Limit": 50.0,
+                "Atrial Amplitude": 0.5,
+                "Atrial Pulse Width": 0.05,
+                "Ventricular Amplitude": 0.5,
+                "Ventricular Pulse Width": 0.05,
+                "VRP": 150.0,
+                "ARP": 150.0
+            },
+            "AAI": {
+                "Lower Rate Limit": 30.0,
+                "Upper Rate Limit": 50.0,
+                "Atrial Amplitude": 7.0,
+                "Atrial Pulse Width": 0.05,
+                "Ventricular Amplitude": 0.5,
+                "Ventricular Pulse Width": 0.05,
+                "VRP": 150.0,
+                "ARP": 150.0
+            },
+            "VVI": {
+                "Lower Rate Limit": 30.0,
+                "Upper Rate Limit": 50.0,
+                "Atrial Amplitude": 0.5,
+                "Atrial Pulse Width": 0.05,
+                "Ventricular Amplitude": 0.5,
+                "Ventricular Pulse Width": 0.05,
+                "VRP": 150.0,
+                "ARP": 150.0
             }
         }
     },
     "states": {
-        "Group28": "AOO"
+        "Group28": "AAI"
     }
 }

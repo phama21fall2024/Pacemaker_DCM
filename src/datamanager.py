@@ -24,11 +24,14 @@ class DataManager:
             json.dump(self.data, f, indent=4) # Saves data into json
 
     def add_user(self, username, password):
-        if len(self.data["users"]) >= 3: # Checks if user exceeds 10
-            return False, "User limit reached (10)"
 
         if username in self.data["users"]: # Checks if user already existed
             return False, "User already exists"
+        
+        if len(self.data["users"]) >= 10: # Checks if user exceeds 10
+            return False, "User limit reached (10)"
+
+        
 
         # hashed_pw = hashlib.sha256(password.encode()).hexdigest() # Hashes the password to ensure security
         self.data["users"][username] = password
