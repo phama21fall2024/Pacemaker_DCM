@@ -1,7 +1,7 @@
 import tkinter as tk
 from datamanager import DataManager
 from welcome import WelcomeScreen
-from main import Application
+from application import Application
 
 class AppController:
     def __init__(self, root):

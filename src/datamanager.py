@@ -31,16 +31,14 @@ class DataManager:
         if len(self.data["users"]) >= 10: # Checks if user exceeds 10
             return False, "User limit reached (10)"
 
-        
-
-        # hashed_pw = hashlib.sha256(password.encode()).hexdigest() # Hashes the password to ensure security
-        self.data["users"][username] = password
+        hashed_pw = hashlib.sha256(password.encode()).hexdigest() # Hashes the password to ensure security
+        self.data["users"][username] = hashed_pw
         self.save_data()
         return True, "User registered"
 
     def validate_user(self, username, password):
-        # hashed_pw = hashlib.sha256(password.encode()).hexdigest() # Make sure the hash password is correct with the saved hashed
-        return self.data["users"].get(username) == password
+        hashed_pw = hashlib.sha256(password.encode()).hexdigest() # Make sure the hash password is correct with the saved hashed
+        return self.data["users"].get(username) == hashed_pw
 
     def save_parameters(self, username, params, state_name="default"):
         if username not in self.data["parameters"]:
@@ -63,3 +61,5 @@ class DataManager:
 
     def get_state(self, username):
         return self.data["states"].get(username) # Gets state from username
+    
+    
