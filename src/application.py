@@ -457,12 +457,17 @@ class Application:
 
         messagebox.showinfo("Saved", f"{msg} (Mode: {current_state})")
 
+    def __save_device(self, serial_number):
+        if serial_number:
+            self.__db.save_device(self.__username, serial_number)
+
     def __check_device(self):
         ports = list(serial.tools.list_ports.comports())
         if ports:
             serial_number = getattr(ports[0], "serial_number", None)
             if serial_number != self.__current_serial:
                 self.__current_serial = serial_number
+                self.__save_device(serial_number)   # << SAVE DEVICE
                 self.__set_led(True)
         else:
             self.__current_serial = None
