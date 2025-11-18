@@ -16,13 +16,13 @@ class Application:
         self.__mode_parameters = {
             "AOO":  ["Lower Rate Limit", "Upper Rate Limit", "Atrial Amplitude", "Atrial Pulse Width"],
             "VOO":  ["Lower Rate Limit", "Upper Rate Limit", "Ventricular Amplitude", "Ventricular Pulse Width"],
-            "AAI":  ["Lower Rate Limit", "Upper Rate Limit", "Atrial Amplitude", "Atrial Pulse Width", "ARP"],
-            "VVI":  ["Lower Rate Limit", "Upper Rate Limit", "Ventricular Amplitude", "Ventricular Pulse Width", "VRP"],
+            "AAI":  ["Lower Rate Limit", "Upper Rate Limit", "Atrial Amplitude", "Atrial Pulse Width", "Atrial Sensitivity", "ARP", "PVARP", "Hysteresis", "Rate Smoothing"],
+            "VVI":  ["Lower Rate Limit", "Upper Rate Limit",  "Ventricular Amplitude", "Ventricular Pulse Width","Ventricular Sensitivity", "VRP", "Hysteresis", "Rate Smoothing"],
 
             "AOOR": ["Lower Rate Limit", "Upper Rate Limit", "Atrial Amplitude", "Atrial Pulse Width"],
             "VOOR": ["Lower Rate Limit", "Upper Rate Limit", "Ventricular Amplitude", "Ventricular Pulse Width"],
-            "AAIR": ["Lower Rate Limit", "Upper Rate Limit", "Atrial Amplitude", "Atrial Pulse Width", "Atrial Sensitivity", "ARP", "PVARP", "Hysteresis", "Rate Smoothing"],
-            "VVIR": ["Lower Rate Limit", "Upper Rate Limit", "Ventricular Amplitude", "Ventricular Pulse Width","Ventricular Sensitivity", "VRP", "Hysteresis", "Rate Smoothing"]
+            "AAIR": ["Lower Rate Limit", "Upper Rate Limit", "Maximum Sensor Rate", "Atrial Amplitude", "Atrial Pulse Width", "Atrial Sensitivity", "ARP", "PVARP", "Hysteresis", "Rate Smoothing"],
+            "VVIR": ["Lower Rate Limit", "Upper Rate Limit", "Maximum Sensor Rate", "Ventricular Amplitude", "Ventricular Pulse Width","Ventricular Sensitivity", "VRP", "Hysteresis", "Rate Smoothing"]
         }
 
         for widget in self.__root.winfo_children():
@@ -81,7 +81,6 @@ class Application:
         snapped = base + round((value - base) / step) * step
         return max(30, min(175, snapped))
 
-
     def __rebuild_parameter_rows(self, mode):
         for widget in self.__param_frame.grid_slaves():
             if int(widget.grid_info()["row"]) > 0:
@@ -99,6 +98,57 @@ class Application:
             tk.Label(self.__param_frame, text=param, font=("Arial", 11)).grid(
                 row=row, column=0, sticky="e", padx=10, pady=4
             )
+
+            # Special case: Hysteresis dropdown
+            if param == "Hysteresis":
+                options = ["Off", "On"]
+                # internal: 0 = Off, 1 = On
+                text_var = tk.StringVar()
+                text_var.set("On" if int(var.get()) == 1 else "Off")
+
+                def update_hyst(*args, v=var, tv=text_var):
+                    v.set(1 if tv.get() == "On" else 0)
+
+                text_var.trace_add("write", update_hyst)
+
+                dropdown = tk.OptionMenu(self.__param_frame, text_var, *options)
+                dropdown.grid(row=row, column=1, padx=10, pady=4)
+
+                display = tk.Label(self.__param_frame, textvariable=text_var, width=6)
+                display.grid(row=row, column=2, padx=5)
+
+                self.__value_entries[param] = dropdown
+                row += 1
+                continue
+
+            # Special case: Rate Smoothing dropdown
+            if param == "Rate Smoothing":
+                options = ["Off", "3", "6", "9", "12", "15", "18", "21", "25"]
+                mapping = {
+                    "Off": 0, "3": 3, "6": 6, "9": 9, "12": 12,
+                    "15": 15, "18": 18, "21": 21, "25": 25
+                }
+                reverse_map = {v: k for k, v in mapping.items()}
+                current_value = int(var.get())
+                text_initial = reverse_map.get(current_value, "Off")
+
+                text_var = tk.StringVar()
+                text_var.set(text_initial)
+
+                def update_rs(*args, v=var, tv=text_var, mp=mapping):
+                    v.set(mp.get(tv.get(), 0))
+
+                text_var.trace_add("write", update_rs)
+
+                dropdown = tk.OptionMenu(self.__param_frame, text_var, *options)
+                dropdown.grid(row=row, column=1, padx=10, pady=4)
+
+                display = tk.Label(self.__param_frame, textvariable=text_var, width=6)
+                display.grid(row=row, column=2, padx=5)
+
+                self.__value_entries[param] = dropdown
+                row += 1
+                continue
 
             val_var = tk.StringVar()
             val_var.set(str(var.get()))
@@ -168,6 +218,7 @@ class Application:
         self.__parameters = {
             "Lower Rate Limit": tk.DoubleVar(),
             "Upper Rate Limit": tk.DoubleVar(),
+            "Maximum Sensor Rate": tk.DoubleVar(),   # ← already added
             "Atrial Amplitude": tk.DoubleVar(),
             "Atrial Pulse Width": tk.DoubleVar(),
             "Ventricular Amplitude": tk.DoubleVar(),
@@ -184,6 +235,7 @@ class Application:
         self.__param_config = {
             "Lower Rate Limit": (30, 175, 1),
             "Upper Rate Limit": (50, 175, 5),
+            "Maximum Sensor Rate": (50, 175, 5),     # ← already added
             "Atrial Amplitude": (0.5, 7.0, 0.1),
             "Atrial Pulse Width": (0.05, 1.9, 0.05),
             "Ventricular Amplitude": (0.5, 7.0, 0.1),
@@ -217,6 +269,56 @@ class Application:
 
             low, high, step = self.__param_config[param]
 
+            # Special case: Hysteresis dropdown in initial table
+            if param == "Hysteresis":
+                options = ["Off", "On"]
+                text_var = tk.StringVar()
+                text_var.set("On" if int(var.get()) == 1 else "Off")
+
+                def update_hyst(*args, v=var, tv=text_var):
+                    v.set(1 if tv.get() == "On" else 0)
+
+                text_var.trace_add("write", update_hyst)
+
+                dropdown = tk.OptionMenu(self.__param_frame, text_var, *options)
+                dropdown.grid(row=row, column=1, padx=10, pady=4)
+
+                display = tk.Label(self.__param_frame, textvariable=text_var, width=6)
+                display.grid(row=row, column=2, padx=5)
+
+                self.__value_entries[param] = dropdown
+                row += 1
+                continue
+
+            # Special case: Rate Smoothing dropdown in initial table
+            if param == "Rate Smoothing":
+                options = ["Off", "3", "6", "9", "12", "15", "18", "21", "25"]
+                mapping = {
+                    "Off": 0, "3": 3, "6": 6, "9": 9, "12": 12,
+                    "15": 15, "18": 18, "21": 21, "25": 25
+                }
+                reverse_map = {v: k for k, v in mapping.items()}
+                current_value = int(var.get())
+                text_initial = reverse_map.get(current_value, "Off")
+
+                text_var = tk.StringVar()
+                text_var.set(text_initial)
+
+                def update_rs(*args, v=var, tv=text_var, mp=mapping):
+                    v.set(mp.get(tv.get(), 0))
+
+                text_var.trace_add("write", update_rs)
+
+                dropdown = tk.OptionMenu(self.__param_frame, text_var, *options)
+                dropdown.grid(row=row, column=1, padx=10, pady=4)
+
+                display = tk.Label(self.__param_frame, textvariable=text_var, width=6)
+                display.grid(row=row, column=2, padx=5)
+
+                self.__value_entries[param] = dropdown
+                row += 1
+                continue
+
             slider = tk.Scale(
                 self.__param_frame,
                 from_=low,
@@ -233,8 +335,9 @@ class Application:
             entry = tk.Entry(self.__param_frame, textvariable=val_var, width=6)
             entry.grid(row=row, column=2, padx=5)
 
-            entry.bind("<Return>", lambda e, p=param, v=var, sv=val_var, s=slider, lo=low, hi=high, st=step: self.__round_and_set(v, sv, s, lo, hi, st))
-            entry.bind("<FocusOut>", lambda e, p=param, v=var, sv=val_var, s=slider, lo=low, hi=high, st=step: self.__round_and_set(v, sv, s, lo, hi, st))
+            entry.bind("<Return>", lambda e, p=param, v=var, sv=val_var, s=slider, lo=low, hi=high, st=step: self.__round_and_set(p, v, sv, s, lo, hi, st))
+
+            entry.bind("<FocusOut>", lambda e, p=param, v=var, sv=val_var, s=slider, lo=low, hi=high, st=step:self.__round_and_set(p, v, sv, s, lo, hi, st))
 
             def on_slider_change(*args, v=var, sv=val_var):
                 sv.set(str(v.get()))
@@ -315,7 +418,7 @@ class Application:
             for var in self.__parameters.values():
                 var.set(0)
 
-        # Rebuild GUI sliders
+        # Rebuild GUI sliders / dropdowns
         self.__rebuild_parameter_rows(name)
 
     def __open_egram(self):
