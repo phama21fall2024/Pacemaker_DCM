@@ -3,6 +3,8 @@ from tkinter import messagebox
 from rounding_helper import RoundingHelper
 import serial.tools.list_ports
 import send_uart
+import egram_manager
+
 
 class Application:
     def __init__(self, root, username, db, logout):
@@ -12,6 +14,7 @@ class Application:
         self.__logout_comp = logout
         self.__serial_port = None
         self.__current_serial = None
+        self.__egram_queue = egram_manager.FloatQueue()
 
         self.__mode_parameters = {
             "AOO":  ["Lower Rate Limit", "Upper Rate Limit", "Atrial Amplitude", "Atrial Pulse Width"],
@@ -218,7 +221,7 @@ class Application:
         self.__parameters = {
             "Lower Rate Limit": tk.DoubleVar(),
             "Upper Rate Limit": tk.DoubleVar(),
-            "Maximum Sensor Rate": tk.DoubleVar(),   # ← already added
+            "Maximum Sensor Rate": tk.DoubleVar(),  
             "Atrial Amplitude": tk.DoubleVar(),
             "Atrial Pulse Width": tk.DoubleVar(),
             "Ventricular Amplitude": tk.DoubleVar(),
@@ -235,7 +238,7 @@ class Application:
         self.__param_config = {
             "Lower Rate Limit": (30, 175, 1),
             "Upper Rate Limit": (50, 175, 5),
-            "Maximum Sensor Rate": (50, 175, 5),     # ← already added
+            "Maximum Sensor Rate": (50, 175, 5),     
             "Atrial Amplitude": (0.5, 7.0, 0.1),
             "Atrial Pulse Width": (0.05, 1.9, 0.05),
             "Ventricular Amplitude": (0.5, 7.0, 0.1),
@@ -423,8 +426,7 @@ class Application:
 
     def __open_egram(self):
         try:
-            import egram_ui
-            egram_ui.open_egram_window(self.__root)
+            egram_manager.open_egram_window(self.__root, self.__egram_queue)
         except Exception as e:
             messagebox.showerror("Error", f"Failed to open Egram UI:\n{e}")
 
@@ -501,4 +503,4 @@ class Application:
     def __logout(self):
         if self.__serial_port and getattr(self.__serial_port, "is_open", False):
             self.__serial_port.close()
-        self.__logout_comp()
+        self.__logout_comp() 

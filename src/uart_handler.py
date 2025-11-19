@@ -12,31 +12,16 @@ class UARTHandler:
                 return p.device
         return None
 
-    def send_parameters(self, param_dict):
+    def send_values(self, values_list):
+        """Send ONLY the values as a CSV packet."""
         port = self.find_device()
         if port is None:
-            raise Exception("Device not found.")
+            raise Exception("Pacemaker device not found.")
 
         ser = serial.Serial(port, self.baudrate, timeout=1)
-        packet = ",".join(str(v) for v in param_dict.values()) + "\n"
+
+        packet = ",".join(str(v) for v in values_list) + "\n"
         ser.write(packet.encode())
+
         ser.close()
-        return True
-
-    def send_from_database(self, db, username):
-        mode = db.get_state(username)
-        if not mode:
-            raise Exception("No pacing mode selected.")
-
-        params = db.get_parameters(username, state_name=mode)
-        if not params:
-            raise Exception(f"No parameters saved for mode {mode}.")
-
-        if hasattr(db, "get_mode_parameters"):
-            allowed = db.get_mode_parameters(mode)
-            filtered = {p: params[p] for p in allowed if p in params}
-        else:
-            filtered = params
-
-        self.send_parameters(filtered)
-        return filtered
+        return packet  # return what was sent for confirmation
