@@ -1,144 +1,85 @@
 {
     "users": {
-        "Group28": "12345",
-        "Group282": "5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5"
+        "Group28": "5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5"
     },
     "parameters": {
         "Group28": {
-            "AOO": {
-                "Lower Rate Limit": 30.0,
-                "Upper Rate Limit": 50.0,
-                "Atrial Amplitude": 0.5,
-                "Atrial Pulse Width": 0.05
-            },
             "VOO": {
-                "Lower Rate Limit": 70.0,
-                "Upper Rate Limit": 50.0,
-                "Ventricular Amplitude": 0.5,
-                "Ventricular Pulse Width": 0.05
+                "Lower Rate Limit": 60.0,
+                "Upper Rate Limit": 120.0,
+                "Ventricular Amplitude": 3.5,
+                "Ventricular Pulse Width": 0.4
             },
-            "AOOR": {
-                "Lower Rate Limit": 30.0,
-                "Upper Rate Limit": 50.0,
-                "Atrial Amplitude": 0.5,
-                "Atrial Pulse Width": 0.05
-            },
-            "VVI": {
-                "Lower Rate Limit": 30.0,
-                "Upper Rate Limit": 50.0,
-                "Ventricular Amplitude": 0.5,
-                "Ventricular Pulse Width": 0.05,
-                "VRP": 150.0
+            "AOO": {
+                "Lower Rate Limit": 60.0,
+                "Upper Rate Limit": 120.0,
+                "Atrial Amplitude": 4.5,
+                "Atrial Pulse Width": 0.4
             },
             "AAI": {
-                "Lower Rate Limit": 30.0,
-                "Upper Rate Limit": 50.0,
-                "Atrial Amplitude": 0.5,
-                "Atrial Pulse Width": 0.05,
-                "ARP": 150.0
-            },
-            "AAIR": {
-                "Lower Rate Limit": 30.0,
-                "Upper Rate Limit": 85.0,
-                "Atrial Amplitude": 0.5,
-                "Atrial Pulse Width": 1.25,
-                "Atrial Sensitivity": 0.2,
-                "PVARP": 150.0,
+                "Lower Rate Limit": 60.0,
+                "Upper Rate Limit": 120.0,
+                "Atrial Amplitude": 3.5,
+                "Atrial Pulse Width": 0.4,
+                "Atrial Sensitivity": 0.75,
+                "PVARP": 250.0,
                 "Hysteresis": 0.0,
                 "Rate Smoothing": 0.0,
-                "ARP": 150.0
-            },
-            "VOOR": {
-                "Lower Rate Limit": 30.0,
-                "Upper Rate Limit": 50.0,
-                "Ventricular Amplitude": 0.5,
-                "Ventricular Pulse Width": 0.05
-            },
-            "VVIR": {
-                "Lower Rate Limit": 30.0,
-                "Upper Rate Limit": 50.0,
-                "Ventricular Amplitude": 0.5,
-                "Ventricular Pulse Width": 0.05,
-                "Ventricular Sensitivity": 1.0,
-                "Hysteresis": 0.0,
-                "Rate Smoothing": 0.0,
-                "VRP": 150.0
-            }
-        },
-        "Group282": {
-            "AOO": {
-                "Lower Rate Limit": 30.0,
-                "Upper Rate Limit": 50.0,
-                "Atrial Amplitude": 0.5,
-                "Atrial Pulse Width": 0.05
-            },
-            "VOO": {
-                "Lower Rate Limit": 30.0,
-                "Upper Rate Limit": 50.0,
-                "Ventricular Amplitude": 0.5,
-                "Ventricular Pulse Width": 0.05
-            },
-            "AAI": {
-                "Lower Rate Limit": 30.0,
-                "Upper Rate Limit": 50.0,
-                "Atrial Amplitude": 0.5,
-                "Atrial Pulse Width": 0.05,
-                "Atrial Sensitivity": 0.2,
-                "PVARP": 150.0,
-                "Hysteresis": 0.0,
-                "Rate Smoothing": 0.0,
-                "ARP": 150.0
+                "ARP": 250.0
             },
             "VVI": {
-                "Lower Rate Limit": 30.0,
-                "Upper Rate Limit": 50.0,
-                "Ventricular Amplitude": 0.5,
-                "Ventricular Pulse Width": 0.05,
-                "Ventricular Sensitivity": 1.0,
+                "Lower Rate Limit": 60.0,
+                "Upper Rate Limit": 120.0,
+                "Ventricular Amplitude": 3.5,
+                "Ventricular Pulse Width": 0.4,
+                "Ventricular Sensitivity": 2.5,
                 "Hysteresis": 0.0,
                 "Rate Smoothing": 0.0,
-                "VRP": 150.0
+                "VRP": 320.0
             },
             "AOOR": {
-                "Lower Rate Limit": 30.0,
-                "Upper Rate Limit": 50.0,
-                "Atrial Amplitude": 0.5,
-                "Atrial Pulse Width": 0.05
+                "Lower Rate Limit": 60.0,
+                "Upper Rate Limit": 120.0,
+                "Atrial Amplitude": 3.5,
+                "Atrial Pulse Width": 0.4
             },
             "VOOR": {
-                "Lower Rate Limit": 30.0,
-                "Upper Rate Limit": 50.0,
-                "Ventricular Amplitude": 0.5,
-                "Ventricular Pulse Width": 0.05
+                "Lower Rate Limit": 60.0,
+                "Upper Rate Limit": 120.0,
+                "Ventricular Amplitude": 3.5,
+                "Ventricular Pulse Width": 0.4
             },
             "AAIR": {
-                "Lower Rate Limit": 30.0,
-                "Upper Rate Limit": 50.0,
-                "Maximum Sensor Rate": 50.0,
-                "Atrial Amplitude": 0.5,
-                "Atrial Pulse Width": 0.05,
-                "Atrial Sensitivity": 0.2,
-                "PVARP": 150.0,
-                "Hysteresis": 1.0,
-                "Rate Smoothing": 25.0,
-                "ARP": 150.0
+                "Lower Rate Limit": 60.0,
+                "Upper Rate Limit": 120.0,
+                "Maximum Sensor Rate": 120.0,
+                "Atrial Amplitude": 3.5,
+                "Atrial Pulse Width": 0.4,
+                "Atrial Sensitivity": 0.75,
+                "PVARP": 250.0,
+                "Hysteresis": 0,
+                "Rate Smoothing": 0,
+                "ARP": 250.0
             },
             "VVIR": {
-                "Lower Rate Limit": 30.0,
-                "Upper Rate Limit": 50.0,
-                "Maximum Sensor Rate": 50.0,
-                "Ventricular Amplitude": 0.5,
-                "Ventricular Pulse Width": 0.05,
-                "Ventricular Sensitivity": 1.0,
-                "Hysteresis": 0.0,
-                "Rate Smoothing": 0.0,
-                "VRP": 150.0
+                "Lower Rate Limit": 60.0,
+                "Upper Rate Limit": 120.0,
+                "Maximum Sensor Rate": 120.0,
+                "Ventricular Amplitude": 3.5,
+                "Ventricular Pulse Width": 0.4,
+                "Ventricular Sensitivity": 2.5,
+                "Hysteresis": 0,
+                "Rate Smoothing": 0,
+                "VRP": 320.0
             }
         }
     },
     "states": {
-        "Group28": "AOO",
-        "Group282": "VVIR"
+        "Group28": "VOOR"
     },
-    "devices": {}
+    "devices": {
+        "Group28": [
+            "000000123456"
+        ]
+    }
 }

@@ -1,76 +1,125 @@
 import tkinter as tk
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
 from collections import deque
 import random
 
+import matplotlib
+matplotlib.use("TkAgg")
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+
+
 class FloatQueue:
-    def __init__(self, maxlen=50):
-        self._buf = deque(maxlen=maxlen)
+    def __init__(self):
+        self.buffer = deque()
 
-    def enqueue(self, value: float):
-        """Add a new float sample to the queue."""
-        if isinstance(value, float):
-            self._buf.append(value)
+    def push(self, sample):
+        self.buffer.append(sample)
 
-    def dequeue_all(self):
-        """Return all samples currently in the queue and clear it."""
-        data = list(self._buf)
-        self._buf.clear()
-        return data
+    def pop(self):
+        if self.buffer:
+            return self.buffer.popleft()
+        return None
 
-    def __len__(self):
-        return len(self._buf)
+    def empty(self):
+        return len(self.buffer) == 0
 
 
-def open_egram_window(parent, egram_queue: FloatQueue):
-    win = tk.Toplevel(parent)
-    win.title("Egram Display")
-    win.geometry("650x450")
-    win.resizable(False, False)
+class EgramGraph(tk.Frame):
+    def __init__(self, parent, queue, mode):
+        super().__init__(parent)
+        self.queue = queue
+        self.mode = mode
 
-    tk.Label(
-        win,
-        text="Egram Visualization",
-        font=("Arial", 14, "bold")
-    ).pack(pady=10)
+        self.max_points = 100
+        self.atrium_data = deque([0.0] * self.max_points, maxlen=self.max_points)
+        self.vent_data = deque([0.0] * self.max_points, maxlen=self.max_points)
 
-    # Matplotlib Figure
-    fig = Figure(figsize=(6, 3), dpi=100)
-    ax = fig.add_subplot(111)
-    ax.set_title("Electrogram Signal")
-    ax.set_xlabel("Time")
-    ax.set_ylabel("Amplitude (mV)")
+        if self.mode == "BOTH":
+            self.fig = Figure(figsize=(7, 4), dpi=100)
+            self.axA = self.fig.add_subplot(211)
+            self.axV = self.fig.add_subplot(212)
+        else:
+            self.fig = Figure(figsize=(7, 3), dpi=100)
+            self.ax = self.fig.add_subplot(111)
 
-    # Empty line plot
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self)
+        self.canvas_widget = self.canvas.get_tk_widget()
+        self.canvas_widget.pack(fill="both", expand=True)
 
-    ax.set_xticklabels([])
-    
-    line, = ax.plot([], [], color="blue")
-    data_buffer = deque(maxlen=50)
+        self.after(50, self.update_plot)
 
-    canvas = FigureCanvasTkAgg(fig, master=win)
-    canvas.draw()
-    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+    def hide_numbers_keep_labels(self, axis):
+        axis.set_xticklabels([])   # remove x numbers
+        axis.set_yticklabels([])   # remove y numbers
 
-    def update_plot():
-        # Pull all new samples
-        new_data = egram_queue.dequeue_all()
+        axis.tick_params(axis='both', length=4)  # keep small ticks
 
-        # Temporarily add fake noise if empty (remove once UART is wired)
-        if not new_data:
-            new_data = [random.uniform(-1, 1)]
+    def update_plot(self):
+        if self.queue.empty():
+            fakeA = random.uniform(0, 5)
+            fakeV = random.uniform(0, 5)
+            self.queue.push({"A": fakeA, "V": fakeV})
 
-        data_buffer.extend(new_data)
+        while not self.queue.empty():
+            sample = self.queue.pop()
+            a_val = sample.get("A")
+            v_val = sample.get("V")
+            if a_val is not None:
+                self.atrium_data.append(float(a_val))
+            if v_val is not None:
+                self.vent_data.append(float(v_val))
 
-        # Update plot
-        line.set_xdata(range(len(data_buffer)))
-        line.set_ydata(list(data_buffer))
+        if self.mode == "BOTH":
+            self.axA.clear()
+            self.axV.clear()
 
-        ax.relim()
-        ax.autoscale_view()
-        canvas.draw_idle()
+            self.axA.plot(list(self.atrium_data))
+            self.axV.plot(list(self.vent_data))
 
-        win.after(40, update_plot)  
+            self.axA.set_ylim(0, 5)
+            self.axV.set_ylim(0, 5)
 
-    update_plot()
+            # axis names preserved
+            self.axA.set_ylabel("Atrial")
+            self.axV.set_ylabel("Ventricular")
+            self.axV.set_xlabel("Samples")
+
+            # remove numeric labels only
+            self.hide_numbers_keep_labels(self.axA)
+            self.hide_numbers_keep_labels(self.axV)
+
+        elif self.mode == "A":
+            self.ax.clear()
+            self.ax.plot(list(self.atrium_data))
+            self.ax.set_ylim(0, 5)
+
+            self.ax.set_ylabel("Atrial")
+            self.ax.set_xlabel("Samples")
+
+            self.hide_numbers_keep_labels(self.ax)
+
+        elif self.mode == "V":
+            self.ax.clear()
+            self.ax.plot(list(self.vent_data))
+            self.ax.set_ylim(0, 5)
+
+            self.ax.set_ylabel("Ventricular")
+            self.ax.set_xlabel("Samples")
+
+            self.hide_numbers_keep_labels(self.ax)
+
+        self.canvas.draw_idle()
+        self.after(50, self.update_plot)
+
+
+def open_egram_window(root, queue, channel_mode="BOTH"):
+    mode = channel_mode if channel_mode in ("A", "V", "BOTH") else "BOTH"
+
+    win = tk.Toplevel(root)
+    win.title(f"Egram - {mode}")
+    win.geometry("900x500")
+
+    graph = EgramGraph(win, queue, mode)
+    graph.pack(fill="both", expand=True)
+
+    return win
