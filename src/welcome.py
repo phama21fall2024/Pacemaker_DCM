@@ -46,8 +46,8 @@ class WelcomeScreen:
         tk.Button(self._frame, text="Login", command=self._login).grid(row=5, column=2, pady=5)
 
         # Quit button (top-right corner)
-        quit_button = tk.Button(self._root, text="Quit", command=self._root.quit, bg="red", fg="white")
-        quit_button.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
+        quit_button = tk.Button( self._root, text="Quit", command=self._root.quit, bg="red", fg="white", font=("Arial", 14, "bold"), width=10, height=1)
+        quit_button.place(relx=0.5, rely=0.5, anchor="n")
 
     def _login(self):
         username = self._entry_name.get().strip()
