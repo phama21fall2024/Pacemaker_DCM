@@ -26,12 +26,6 @@ class RoundingHelper:
         return rounded
     
     def round_lrl(value, low=30.0, high=175.0):
-        """
-        Lower Rate Limit:
-          30–50  -> step 5
-          50–90  -> step 1
-          90–175 -> step 5
-        """
         try:
             val = float(value)
         except:

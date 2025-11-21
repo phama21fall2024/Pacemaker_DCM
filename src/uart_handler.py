@@ -4,8 +4,9 @@ import serial.tools.list_ports
 
 class UARTHandler:
     # Handles low-level UART communication
-    def __init__(self, baudrate=9600):
+    def __init__(self, baudrate=9600, timeout=1):
         self.baudrate = baudrate
+        self.timeout = timeout
 
     def find_device(self):
         # Find the first USB/Serial/UART device
@@ -15,32 +16,22 @@ class UARTHandler:
                 return p.device
         return None
 
-    def send_values(self, values_list):
+    def send_bytes(self, packet_bytes: bytes):
         port = self.find_device()
         if port is None:
             raise Exception("Pacemaker device not found.")
 
-        print(f"[UART] Trying to open port: {port}")
+        print(f"Trying to open port: {port}")
 
         try:
-            ser = serial.Serial(port, self.baudrate, timeout=1)
+            ser = serial.Serial(port, self.baudrate, timeout=self.timeout)
         except Exception as e:
-            raise Exception(f"[UART] FAILED to open {port}: {e}")
+            raise Exception(f"FAILED to open {port}: {e}")
 
         try:
-            formatted = []
-            for v in values_list:
-                f = float(v)
-                if f.is_integer():
-                    formatted.append(str(int(f)))
-                else:
-                    formatted.append(f"{f:.3f}")
-
-            packet = ",".join(formatted) + "\n"
-            ser.write(packet.encode("ascii"))
-            print(f"[UART] Sent: {packet}")
-
+            ser.write(packet_bytes)
+            print(f"Sent {len(packet_bytes)} bytes (hex={packet_bytes.hex()})")
         finally:
             ser.close()
 
-        return packet
+        return len(packet_bytes)

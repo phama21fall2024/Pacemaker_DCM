@@ -30,7 +30,7 @@ class EgramGraph(tk.Frame):
         self.queue = queue
         self.mode = mode
 
-        self.max_points = 100
+        self.max_points = 30
         self.atrium_data = deque([0.0] * self.max_points, maxlen=self.max_points)
         self.vent_data = deque([0.0] * self.max_points, maxlen=self.max_points)
 
@@ -52,7 +52,7 @@ class EgramGraph(tk.Frame):
         axis.set_xticklabels([])   # remove x numbers
         axis.set_yticklabels([])   # remove y numbers
 
-        axis.tick_params(axis='both', length=4)  # keep small ticks
+        axis.tick_params(axis='both', length=4)  
 
     def update_plot(self):
         if self.queue.empty():
@@ -79,6 +79,9 @@ class EgramGraph(tk.Frame):
             self.axA.set_ylim(0, 5)
             self.axV.set_ylim(0, 5)
 
+            self.axA.invert_xaxis()   
+            self.axV.invert_xaxis()
+
             # axis names preserved
             self.axA.set_ylabel("Atrial")
             self.axV.set_ylabel("Ventricular")
@@ -92,6 +95,7 @@ class EgramGraph(tk.Frame):
             self.ax.clear()
             self.ax.plot(list(self.atrium_data))
             self.ax.set_ylim(0, 5)
+            self.ax.invert_xaxis()
 
             self.ax.set_ylabel("Atrial")
             self.ax.set_xlabel("Samples")
@@ -102,6 +106,7 @@ class EgramGraph(tk.Frame):
             self.ax.clear()
             self.ax.plot(list(self.vent_data))
             self.ax.set_ylim(0, 5)
+            self.ax.invert_xaxis() 
 
             self.ax.set_ylabel("Ventricular")
             self.ax.set_xlabel("Samples")
