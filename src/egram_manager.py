@@ -128,3 +128,13 @@ def open_egram_window(root, queue, channel_mode="BOTH"):
     graph.pack(fill="both", expand=True)
 
     return win
+
+def embed_live_egram(parent, queue, mode):
+    # Clear previous embedded plots
+    for w in parent.winfo_children():
+        w.destroy()
+
+    graph = EgramGraph(parent, queue, mode)
+    graph.pack(fill="both", expand=True)
+
+
