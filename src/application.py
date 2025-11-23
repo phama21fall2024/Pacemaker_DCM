@@ -28,7 +28,8 @@ class Application:
             "AAIR": ["Lower Rate Limit", "Upper Rate Limit", "Maximum Sensor Rate", "Atrial Amplitude", "Atrial Pulse Width", "Atrial Sensitivity", "ARP", "PVARP", "Hysteresis", "Rate Smoothing", "Activity Threshold", "Reaction Time", "Response Factor", "Recovery Time"],
             "VVIR": ["Lower Rate Limit", "Upper Rate Limit", "Maximum Sensor Rate", "Ventricular Amplitude", "Ventricular Pulse Width", "Ventricular Sensitivity", "VRP", "Hysteresis", "Rate Smoothing", "Activity Threshold", "Reaction Time", "Response Factor", "Recovery Time"]
         }
-
+        for widget in self.__root.winfo_children():
+            widget.destroy()
 
         for widget in self.__root.winfo_children():
             widget.destroy()
@@ -36,13 +37,14 @@ class Application:
         self.__root.title("Pacemaker DCM")
         self.__root.geometry("800x600")
         self.__root.resizable(False, False)
-
         self.__create_status_display()
         self.__create_param_display()
-        self.__create_state_display()
+
+        self.__create_top_right_panel()      
+        self.__create_state_display()       
+        self.__create_device_id_section()    
         self.__create_egram_panel()
         self.__create_serial_display()
-
         self.__check_device()
 
     def __create_status_display(self):
@@ -204,6 +206,28 @@ class Application:
             "Recovery Time": (2, 16, 1),
         }
 
+        self.__param_units = {
+            "Lower Rate Limit": "ppm",
+            "Upper Rate Limit": "ppm",
+            "Maximum Sensor Rate": "ppm",
+            "Atrial Amplitude": "V",
+            "Atrial Pulse Width": "ms",
+            "Ventricular Amplitude": "V",
+            "Ventricular Pulse Width": "ms",
+            "Atrial Sensitivity": "mV",
+            "Ventricular Sensitivity": "mV",
+            "PVARP": "ms",
+            "VRP": "ms",
+            "ARP": "ms",
+            "Hysteresis": "",
+            "Rate Smoothing": "%",
+            "Activity Threshold": "",
+            "Reaction Time": "sec",
+            "Response Factor": "",
+            "Recovery Time": "min",
+        }
+
+
         existing = self.__db.get_parameters(self.__username)
         if existing:
             for p, v in self.__parameters.items():
@@ -227,7 +251,8 @@ class Application:
         for param in allowed:
             var = self.__parameters[param]
 
-            tk.Label(self.__param_frame, text=param, font=("Arial", 10)) \
+            label_text = f"{param} ({self.__param_units.get(param, '')})" if self.__param_units.get(param, "") else param
+            tk.Label(self.__param_frame, text=label_text, font=("Arial", 10)) \
                 .grid(row=row, column=0, sticky="e", pady=1, padx=(0, 5))
 
             # Activity Threshold
@@ -270,7 +295,7 @@ class Application:
             if param == "Lower Rate Limit":
                 slider = tk.Scale(self.__param_frame, from_=low, to=high,
                                 orient="horizontal", length=140, resolution=1,
-                                variable=var)
+                                variable=var,showvalue=0)
                 def sync(*a, v=var, sv=val_var, s=slider):
                     raw = v.get()
                     snap = self.__adjust_lrl_step(raw)
@@ -290,7 +315,7 @@ class Application:
                 # Slider
                 slider = tk.Scale(self.__param_frame, from_=low, to=high,
                                 orient="horizontal", length=120, resolution=0.1,
-                                variable=var)
+                                variable=var,showvalue=0)
                 
                 # Position slider closer
                 slider.grid(row=row, column=1, padx=(55, 3))
@@ -341,12 +366,12 @@ class Application:
             else:
                 slider = tk.Scale(self.__param_frame, from_=low, to=high,
                                 orient="horizontal", length=140,
-                                resolution=step, variable=var)
+                                resolution=step, variable=var,showvalue=0)
                 def sync(*a, v=var, sv=val_var):
                     sv.set(str(v.get()))
                 var.trace_add("write", sync)
 
-            slider.grid(row=row, column=1, padx=(5, 5))
+            slider.grid(row=row, column=1, padx=(5,5))
 
             entry = tk.Entry(self.__param_frame, textvariable=val_var, width=6)
             entry.grid(row=row, column=2, padx=(5, 0))
@@ -367,28 +392,59 @@ class Application:
                 command=self.__send_to_device).grid(row=row, column=1, pady=8)
         tk.Button(self.__param_frame, text="Logout", bg="lightcoral",
                 command=self.__logout).grid(row=row, column=2, pady=8)
+    
+    def __create_top_right_panel(self):
+        self.__top_right_panel = tk.Frame(self.__root, bd=1, relief="solid")
+        self.__top_right_panel.place(relx=0.98, rely=0.05, anchor="ne", width=500, height=120)
+
+        # Create a grid layout INSIDE the panel
+        self.__top_right_panel.grid_columnconfigure(0, weight=1)
+        self.__top_right_panel.grid_columnconfigure(1, weight=1)
 
 
     def __create_state_display(self):
-        f = tk.Frame(self.__root)
-        f.place(relx=0.98, rely=0.05, anchor="ne")
-
-        tk.Label(f, text="States", font=("Arial", 10, "bold")).pack(anchor="e")
-
+        frame = tk.Frame(self.__top_right_panel)
+        frame.grid(row=0, column=0, sticky="nw", padx=10, pady=5)
+        tk.Label(frame, text="States", font=("Arial", 10, "bold")).grid(row=0, column=0, columnspan=4, sticky="w")
         self.__state_buttons = {}
-
-        wrapper = tk.Frame(f)
-        wrapper.pack()
-
-        for name in ["AOO", "VOO", "AAI", "VVI", "AOOR", "VOOR", "AAIR", "VVIR"]:
-            b = tk.Button(wrapper, text=name, width=6, height=1, font=("Arial", 9),
+        modes = ["AOO", "VOO", "AAI", "VVI", "AOOR", "VOOR", "AAIR", "VVIR"]
+        row = 1
+        col = 0
+        for name in modes:
+            b = tk.Button(frame, text=name, width=6, height=1, font=("Arial", 9),
                         command=lambda n=name: self.__select_state(n))
-            b.pack(side="left", padx=3)
+            b.grid(row=row, column=col, padx=3, pady=2)
             self.__state_buttons[name] = b
 
+            col += 1
+            if col == 4:   # wrap to next row after 4 buttons
+                col = 0
+                row += 1
+
+        # Highlight last selected state
         last = self.__db.get_state(self.__username)
         if last:
             self.__select_state(last)
+
+
+
+    def __create_device_id_section(self):
+        frame = tk.Frame(self.__top_right_panel)
+        frame.grid(row=0, column=1, sticky="ne", padx=10)
+
+        tk.Label(frame, text="Device ID", font=("Arial", 10, "bold")).pack(anchor="e")
+
+        self.__device_id_var = tk.StringVar()
+        entry = tk.Entry(frame, textvariable=self.__device_id_var, width=16)
+        entry.pack(anchor="e", pady=(2, 3))
+
+        def save_id():
+            val = self.__device_id_var.get().strip()
+            if self.__current_serial and val:
+                self.__db.save_device_id(self.__username, self.__current_serial, val)
+                messagebox.showinfo("Saved", "Device ID updated.")
+
+        tk.Button(frame, text="Save", width=12, command=save_id).pack(anchor="e")
 
 
     def __select_state(self, name):
@@ -412,23 +468,17 @@ class Application:
             "Lower Rate Limit": 60,
             "Upper Rate Limit": 120,
             "Maximum Sensor Rate": 120,
-
             "Atrial Amplitude": 3.5,
             "Atrial Pulse Width": 0.4,
             "Ventricular Amplitude": 3.5,
             "Ventricular Pulse Width": 0.4,
-
             "Atrial Sensitivity": 0.75,
             "Ventricular Sensitivity": 2.5,
-
             "PVARP": 250,
             "VRP": 320,
             "ARP": 250,
-
             "Hysteresis": 0,
             "Rate Smoothing": 0,
-
-            # NEW SENSOR PARAMETERS
             "Activity Threshold": 4,
             "Reaction Time": 30,
             "Response Factor": 8,
@@ -464,7 +514,6 @@ class Application:
         graph.pack(fill="both", expand=True)
 
 
-
     def __save_parameters(self):
         mode = self.__db.get_state(self.__username)
         if not mode:
@@ -492,8 +541,28 @@ class Application:
             messagebox.showerror("UART Error", str(e))
 
     def __save_device(self, serial_number):
-        if serial_number:
-            self.__db.save_device(self.__username, serial_number)
+        saved_id = self.__db.get_device_id(self.__username, serial_number)
+
+        if saved_id is None:
+            popup = tk.Toplevel(self.__root)
+            popup.title("Device ID")
+
+            tk.Label(popup, text="Enter Device ID:").pack(pady=5)
+            dev_var = tk.StringVar()
+            entry = tk.Entry(popup, textvariable=dev_var)
+            entry.pack(pady=5)
+            entry.focus()
+
+            def save_and_close():
+                device_id = dev_var.get().strip()
+                if device_id:
+                    self.__db.save_device_id(self.__username, serial_number, device_id)
+                popup.destroy()
+
+            tk.Button(popup, text="Save", command=save_and_close).pack(pady=5)
+        else:
+            self.__db.update_device_last_used(self.__username, serial_number)
+
 
     def __check_device(self):
         ports = list(serial.tools.list_ports.comports())
@@ -528,9 +597,18 @@ class Application:
 
     def __update_serial_label(self):
         if self.__current_serial:
-            self.__serial_label.config(text=f"Serial: {self.__current_serial}", fg="black")
+            device_id = self.__db.get_device_id(self.__username, self.__current_serial)
+            if device_id:
+                self.__serial_label.config(text=f"Device: {device_id}", fg="black")
+                self.__device_id_var.set(device_id)
+            else:
+                self.__serial_label.config(text=f"Serial: {self.__current_serial}", fg="black")
+                self.__device_id_var.set("")
         else:
             self.__serial_label.config(text="Serial: None", fg="gray")
+            self.__device_id_var.set("")
+
+
 
     def __logout(self):
         if self.__serial_port and getattr(self.__serial_port, "is_open", False):

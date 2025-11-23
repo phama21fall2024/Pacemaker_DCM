@@ -6,6 +6,7 @@ class WelcomeScreen:
         self._root = root
         self._db = db
         self._login_comp = login_comp
+        self._root.bind("<Return>", self._enter_login)
 
         # Create a frame but don't destroy anything yet
         self._frame = tk.Frame(self._root)
@@ -63,6 +64,9 @@ class WelcomeScreen:
             self._login_comp(username)
         else:
             messagebox.showerror("Error", "Invalid credentials")
+
+    def _enter_login(self, event):
+        self._login()
 
     def _register(self):
         username = self._entry_name.get().strip()

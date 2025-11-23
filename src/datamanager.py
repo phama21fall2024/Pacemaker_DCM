@@ -1,6 +1,7 @@
 import json
 import hashlib
 import os
+from datetime import datetime
 
 class DataManager:
     def __init__(self, filename="pacemaker_data.json"):
@@ -9,22 +10,26 @@ class DataManager:
             "users": {},
             "parameters": {},
             "states": {},
-            "devices": {}    # <-- NEW
+            "devices": {}
         }
         self.load_data()
 
     def load_data(self):
-        if os.path.exists(self.filename): 
+        if os.path.exists(self.filename):
             with open(self.filename, "r") as f:
-                try: 
+                try:
                     self.data = json.load(f)
 
-                    # Ensure new keys exist in older JSON files
                     if "devices" not in self.data:
                         self.data["devices"] = {}
 
                 except json.JSONDecodeError:
-                    self.data = {"users": {}, "parameters": {}, "states": {}, "devices": {}}
+                    self.data = {
+                        "users": {},
+                        "parameters": {},
+                        "states": {},
+                        "devices": {}
+                    }
         else:
             self.save_data()
 
@@ -35,7 +40,6 @@ class DataManager:
     def add_user(self, username, password):
         if username in self.data["users"]:
             return False, "User already exists"
-        
         if len(self.data["users"]) >= 10:
             return False, "User limit reached (10)"
 
@@ -51,18 +55,16 @@ class DataManager:
     def save_parameters(self, username, params, state_name="default"):
         if username not in self.data["parameters"]:
             self.data["parameters"][username] = {}
-
         self.data["parameters"][username][state_name] = params
         self.save_data()
         return True, f"Parameters for {state_name} saved successfully."
 
     def get_parameters(self, username, state_name="default"):
-        return self.data["parameters"].get(username, {}).get(state_name, None)
+        return self.data["parameters"].get(username, {}).get(state_name)
 
     def save_state(self, username, state):
         if username not in self.data["users"]:
             return False, "User not found"
-        
         self.data["states"][username] = state
         self.save_data()
         return True, f"State '{state}' saved"
@@ -70,15 +72,28 @@ class DataManager:
     def get_state(self, username):
         return self.data["states"].get(username)
 
-    def save_device(self, username, serial_number):
-        """Save a detected device serial number to JSON."""
+    def save_device_id(self, username, serial_number, device_id):
         if username not in self.data["devices"]:
-            self.data["devices"][username] = []
+            self.data["devices"][username] = {}
 
-        if serial_number not in self.data["devices"][username]:
-            self.data["devices"][username].append(serial_number)
-            self.save_data()
+        self.data["devices"][username][serial_number] = {
+            "device_id": device_id,
+            "last_used": datetime.now().strftime("%Y-%m-%d %H:%M")
+        }
+        self.save_data()
+
+    def get_device_id(self, username, serial_number):
+        user_devs = self.data["devices"].get(username, {})
+        dev = user_devs.get(serial_number)
+        if dev:
+            return dev.get("device_id")
+        return None
 
     def get_devices(self, username):
-        """Retrieve all saved devices for a user."""
         return self.data["devices"].get(username, [])
+
+    def update_device_last_used(self, username, serial_number):
+        devs = self.data["devices"].get(username, {})
+        if serial_number in devs:
+            devs[serial_number]["last_used"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+            self.save_data()

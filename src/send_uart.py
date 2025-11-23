@@ -34,7 +34,6 @@ FULL_ORDER = [
     "Rate Smoothing",
 ]
 
-
 class UARTSender:
     def __init__(self, receiver_ref=None):
         self.db = DataManager()
