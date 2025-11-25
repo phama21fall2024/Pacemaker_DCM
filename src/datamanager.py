@@ -73,6 +73,9 @@ class DataManager:
         return self.data["states"].get(username)
 
     def save_device_id(self, username, serial_number, device_id):
+        if not serial_number:
+            return  # don't save invalid key
+
         if username not in self.data["devices"]:
             self.data["devices"][username] = {}
 
@@ -81,6 +84,7 @@ class DataManager:
             "last_used": datetime.now().strftime("%Y-%m-%d %H:%M")
         }
         self.save_data()
+
 
     def get_device_id(self, username, serial_number):
         user_devs = self.data["devices"].get(username, {})

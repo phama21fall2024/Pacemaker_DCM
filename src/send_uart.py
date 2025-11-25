@@ -16,7 +16,6 @@ MODE_BITMASK = {
     "VVIR": 0b00001000,
 }
 
-# Always send parameters in this order (missing ones => 0)
 FULL_ORDER = [
     "Lower Rate Limit",
     "Upper Rate Limit",
@@ -25,14 +24,19 @@ FULL_ORDER = [
     "Ventricular Amplitude",
     "Atrial Pulse Width",
     "Ventricular Pulse Width",
-    "Atrial Sensi1tivity",
+    "Atrial Sensitivity",
     "Ventricular Sensitivity",
     "PVARP",
     "VRP",
     "ARP",
     "Hysteresis",
     "Rate Smoothing",
+    "Activity Threshold",
+    "Reaction Time",
+    "Response Factor",
+    "Recovery Time",
 ]
+
 
 class UARTSender:
     def __init__(self, receiver_ref=None):
@@ -47,8 +51,12 @@ class UARTSender:
             fval = 0.0
 
         # 8-bit ints
-        if name in ("Lower Rate Limit", "Upper Rate Limit",
-                    "Maximum Sensor Rate", "Hysteresis"):
+        if name in (
+            "Lower Rate Limit", "Upper Rate Limit",
+            "Maximum Sensor Rate", "Hysteresis",
+            "Activity Threshold", "Reaction Time",
+            "Response Factor", "Recovery Time"
+        ):
             return bytes([max(0, min(255, int(fval)))])
 
         # 32-bit floats
@@ -57,7 +65,8 @@ class UARTSender:
             "Atrial Pulse Width", "Ventricular Pulse Width",
             "Atrial Sensitivity", "Ventricular Sensitivity"
         ):
-            return struct.pack(">f", fval)
+            scaled = int(round(fval * 100))
+            return struct.pack(">H", max(0, min(65535, scaled)))
 
         # 16-bit ints
         if name in ("PVARP", "VRP", "ARP"):
