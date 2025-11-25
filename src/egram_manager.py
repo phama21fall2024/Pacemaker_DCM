@@ -50,7 +50,6 @@ class EgramGraph(tk.Frame):
 
     def hide_numbers_keep_labels(self, axis):
         axis.set_xticklabels([])   # remove x numbers
-        axis.set_yticklabels([])   # remove y numbers
 
         axis.tick_params(axis='both', length=4)  
 

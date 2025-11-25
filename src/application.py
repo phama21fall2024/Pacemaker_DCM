@@ -104,24 +104,6 @@ class Application:
             self.__btn_V.config(state="normal")
             self.__btn_B.config(state="normal")
 
-    def __adjust_amplitude_step(self, value):
-        try:
-            v = float(value)
-        except:
-            return None
-
-        if v <= 0:
-            return 0.0
-        if 0.5 <= v <= 3.2:
-            return round(v * 10) / 10.0
-        if 3.2 < v < 3.5:
-            return 3.2 if abs(v - 3.2) < abs(v - 3.5) else 3.5
-        if 3.5 <= v <= 7.0:
-            return round(v / 0.5) * 0.5
-        if v < 0.5:
-            return 0.5
-        return 7.0
-
     def __adjust_lrl_step(self, value):
         v = int(value)
         if 30 <= v <= 50:
@@ -163,12 +145,12 @@ class Application:
             "Lower Rate Limit": tk.IntVar(value=60),
             "Upper Rate Limit": tk.IntVar(value=120),
             "Maximum Sensor Rate": tk.IntVar(value=120),
-            "Atrial Amplitude": tk.DoubleVar(value=3.5),
-            "Atrial Pulse Width": tk.DoubleVar(value=0.4),
-            "Ventricular Amplitude": tk.DoubleVar(value=3.5),
-            "Ventricular Pulse Width": tk.DoubleVar(value=0.4),
-            "Atrial Sensitivity": tk.DoubleVar(value=0.75),
-            "Ventricular Sensitivity": tk.DoubleVar(value=2.5),
+            "Atrial Amplitude": tk.DoubleVar(value=5),
+            "Atrial Pulse Width": tk.DoubleVar(value=1),
+            "Ventricular Amplitude": tk.DoubleVar(value=5),
+            "Ventricular Pulse Width": tk.DoubleVar(value=1),
+            "Atrial Sensitivity": tk.DoubleVar(value=0),
+            "Ventricular Sensitivity": tk.DoubleVar(value=0),
             "PVARP": tk.DoubleVar(value=250),
             "VRP": tk.DoubleVar(value=320),
             "ARP": tk.DoubleVar(value=250),
@@ -184,12 +166,12 @@ class Application:
             "Lower Rate Limit": (30, 175, 1),
             "Upper Rate Limit": (50, 175, 5),
             "Maximum Sensor Rate": (50, 175, 5),
-            "Atrial Amplitude": (0.5, 7.0, 0.1),
-            "Atrial Pulse Width": (0.05, 1.9, 0.05),
-            "Ventricular Amplitude": (0.5, 7.0, 0.1),
-            "Ventricular Pulse Width": (0.05, 1.9, 0.05),
-            "Atrial Sensitivity": (0.25, 10.0, 0.25),
-            "Ventricular Sensitivity": (0.25, 10.0, 0.5),
+            "Atrial Amplitude": (0.0, 5.0, 0.1),
+            "Atrial Pulse Width": (1, 30, 1),
+            "Ventricular Amplitude": (0.0, 5.0, 0.1),
+            "Ventricular Pulse Width": (1, 30, 1),
+            "Atrial Sensitivity": (0.0, 5.0, 0.1),
+            "Ventricular Sensitivity": (0.0, 5.0, 0.1),
             "PVARP": (150, 500, 10),
             "VRP": (150, 500, 5),
             "ARP": (150, 500, 5),
@@ -247,8 +229,7 @@ class Application:
             var = self.__parameters[param]
             label_text = f"{param} ({self.__param_units.get(param, '')})" if self.__param_units.get(param, "") else param
 
-            tk.Label(self.__param_frame, text=label_text, font=("Arial", 10)) \
-                .grid(row=row, column=0, sticky="e", pady=1, padx=(0, 5))
+            tk.Label(self.__param_frame, text=label_text, font=("Arial", 10)) .grid(row=row, column=0, sticky="e", pady=1, padx=(0, 5))
 
             # SPECIAL CASE: Activity Threshold
             if param == "Activity Threshold":
@@ -280,12 +261,11 @@ class Application:
                 row += 1
                 continue
 
-            # CONFIG
+            
             low, high, step = self.__param_config[param]
-
-            # FIX: fresh StringVar for EVERY parameter (prevents cross-updating)
             val_var = tk.StringVar()
             val_var.set(str(var.get()))
+
 
             # SPECIAL CASE: LRL
             if param == "Lower Rate Limit":
@@ -302,135 +282,6 @@ class Application:
                     s.set(snap)
 
                 var.trace_add("write", sync_lrl)
-
-            # SPECIAL CASE: Amplitude
-            elif param in ("Atrial Amplitude", "Ventricular Amplitude"):
-                mode_var = tk.StringVar(value="Off" if var.get() == 0 else "On")
-                tk.OptionMenu(self.__param_frame, mode_var, "Off", "On").grid(row=row, column=1, sticky="w", pady=(10, 0))
-
-                slider = tk.Scale(self.__param_frame, from_=low, to=high,
-                                orient="horizontal", length=120, resolution=0.1,
-                                variable=var, showvalue=0)
-                slider.grid(row=row, column=1, padx=(55, 3))
-
-                entry = tk.Entry(self.__param_frame, textvariable=val_var, width=5)
-                entry.grid(row=row, column=2, padx=(5, 0))
-
-                def sync_amp(*a, v=var, sv=val_var, mv=mode_var):
-                    if mv.get() == "Off":
-                        v.set(0.0)
-                        sv.set("0.0")
-                        return
-                    snap = self.__adjust_amplitude_step(v.get())
-                    v.set(snap)
-                    sv.set(str(snap))
-
-                var.trace_add("write", sync_amp)
-
-                def mode_change(*a, v=var, mv=mode_var, sl=slider, sv=val_var):
-                    if mv.get() == "Off":
-                        sl.config(state="disabled")
-                        v.set(0.0)
-                        sv.set("0.0")
-                    else:
-                        sl.config(state="normal")
-
-                mode_var.trace_add("write", mode_change)
-
-                if mode_var.get() == "Off":
-                    slider.config(state="disabled")
-
-                entry.bind("<Return>", lambda e: sync_amp())
-                entry.bind("<FocusOut>", lambda e: sync_amp())
-
-                row += 1
-                continue
-
-            # SPECIAL CASE: Pulse Width — FIXED STEPS (0.05, 0.1, 0.2 ... 1.9)
-            elif param in ("Atrial Pulse Width", "Ventricular Pulse Width"):
-                pulse_steps = [0.05] + [round(0.10 + i * 0.10, 2) for i in range(0, 19)]
-                index_var = tk.IntVar(value=pulse_steps.index(round(var.get(), 2)))
-
-                slider = tk.Scale(
-                    self.__param_frame,
-                    from_=0,
-                    to=len(pulse_steps) - 1,
-                    orient="horizontal",
-                    length=140,
-                    resolution=1,
-                    variable=index_var,
-                    showvalue=0
-                )
-                slider.grid(row=row, column=1, padx=(5, 5))
-
-                entry = tk.Entry(self.__param_frame, textvariable=val_var, width=6)
-                entry.grid(row=row, column=2, padx=(5, 0))
-
-                def sync_from_slider(*a, v=var, s=index_var, steps=pulse_steps, sv=val_var):
-                    value = steps[s.get()]
-                    sv.set(str(value))
-                    v.set(value)
-
-                def sync_from_entry(*a, v=var, s=index_var, steps=pulse_steps, sv=val_var):
-                    try:
-                        x = float(sv.get())
-                    except:
-                        return
-                    closest = min(steps, key=lambda z: abs(z - x))
-                    idx = steps.index(closest)
-                    s.set(idx)
-                    v.set(closest)
-                    sv.set(str(closest))
-
-                index_var.trace_add("write", sync_from_slider)
-                entry.bind("<Return>", lambda e: sync_from_entry())
-                entry.bind("<FocusOut>", lambda e: sync_from_entry())
-
-                row += 1
-                continue
-            
-            # SPECIAL CASE: Sensitivities
-            elif param in ("Atrial Sensitivity", "Ventricular Sensitivity"):
-                steps = [0.25, 0.50, 0.75] + [round(1.0 + i * 0.5, 2) for i in range(0, 19)]
-                index_var = tk.IntVar(value=steps.index(round(var.get(), 2)))
-
-                slider = tk.Scale(
-                    self.__param_frame,
-                    from_=0,
-                    to=len(steps) - 1,
-                    orient="horizontal",
-                    length=140,
-                    resolution=1,
-                    variable=index_var,
-                    showvalue=0
-                )
-                slider.grid(row=row, column=1, padx=(5, 5))
-
-                entry = tk.Entry(self.__param_frame, textvariable=val_var, width=6)
-                entry.grid(row=row, column=2, padx=(5, 0))
-
-                def sync_from_slider(*a, v=var, s=index_var, st=steps, sv=val_var):
-                    value = st[s.get()]
-                    sv.set(str(value))
-                    v.set(value)
-
-                def sync_from_entry(*a, v=var, s=index_var, st=steps, sv=val_var):
-                    try:
-                        x = float(sv.get())
-                    except:
-                        return
-                    closest = min(st, key=lambda z: abs(z - x))
-                    idx = st.index(closest)
-                    s.set(idx)
-                    v.set(closest)
-                    sv.set(str(closest))
-
-                index_var.trace_add("write", sync_from_slider)
-                entry.bind("<Return>", lambda e: sync_from_entry())
-                entry.bind("<FocusOut>", lambda e: sync_from_entry())
-
-                row += 1
-                continue
 
             # STANDARD SLIDERS
             else:
@@ -557,12 +408,12 @@ class Application:
             "Lower Rate Limit": 60,
             "Upper Rate Limit": 120,
             "Maximum Sensor Rate": 120,
-            "Atrial Amplitude": 3.5,
-            "Atrial Pulse Width": 0.4,
-            "Ventricular Amplitude": 3.5,
-            "Ventricular Pulse Width": 0.4,
-            "Atrial Sensitivity": 0.75,
-            "Ventricular Sensitivity": 2.5,
+            "Atrial Amplitude": 5,
+            "Atrial Pulse Width": 1,
+            "Ventricular Amplitude": 5,
+            "Ventricular Pulse Width": 1,
+            "Atrial Sensitivity": 0,
+            "Ventricular Sensitivity": 0,
             "PVARP": 250,
             "VRP": 320,
             "ARP": 250,
