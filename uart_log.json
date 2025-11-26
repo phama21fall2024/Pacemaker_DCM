@@ -253,5 +253,47 @@
       "Recovery Time": 5
     },
     "timestamp": "2025-11-26T17:32:24"
+  },
+  {
+    "username": "Group28",
+    "mode": "VVIR",
+    "packet_hex": "083c780000a04001000000000000a04001000000004001fa00fa001e08050478",
+    "params": {
+      "Lower Rate Limit": 60,
+      "Upper Rate Limit": 120,
+      "Maximum Sensor Rate": 120,
+      "Ventricular Amplitude": 5.0,
+      "Ventricular Pulse Width": 1.0,
+      "Ventricular Sensitivity": 0.0,
+      "VRP": 320.0,
+      "Hysteresis": 0,
+      "Rate Smoothing": 0.0,
+      "Activity Threshold": 4,
+      "Reaction Time": 30,
+      "Response Factor": 8,
+      "Recovery Time": 5
+    },
+    "timestamp": "2025-11-26T17:50:52"
+  },
+  {
+    "username": "Group28",
+    "mode": "VVIR",
+    "packet_hex": "083c780000a04001000000000000a04001000000004001fa00fa001e08050478",
+    "params": {
+      "Lower Rate Limit": 60,
+      "Upper Rate Limit": 120,
+      "Maximum Sensor Rate": 120,
+      "Ventricular Amplitude": 5.0,
+      "Ventricular Pulse Width": 1.0,
+      "Ventricular Sensitivity": 0.0,
+      "VRP": 320.0,
+      "Hysteresis": 0,
+      "Rate Smoothing": 0.0,
+      "Activity Threshold": 4,
+      "Reaction Time": 30,
+      "Response Factor": 8,
+      "Recovery Time": 5
+    },
+    "timestamp": "2025-11-26T17:55:00"
   }
 ]

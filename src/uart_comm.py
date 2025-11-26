@@ -67,7 +67,7 @@ class UARTComm:
         for p in ports:
             if p.vid == 0x1366 and p.pid == 0x1015:
                 try:
-                    self.ser = serial.Serial(p.device, self.baudrate, timeout=0)
+                    self.ser = serial.Serial(p.device, self.baudrate, timeout   =0)
                     print("CONNECTED:", p.device)
                     return True
                 except Exception as e:
@@ -186,16 +186,3 @@ class UARTComm:
 
         with open(path, "w") as f:
             json.dump(data, f, indent=2)
-
-    def test_receive(self):
-        print("LISTEN-ONLY MODE")
-        print("Waiting for incoming data...")
-
-        while True:
-            n = self.ser.in_waiting
-            if n > 0:
-                data = self.ser.read(n)
-                print("RX RAW:", data.hex())
-            else:
-                print("...no data")
-            time.sleep(0.5)

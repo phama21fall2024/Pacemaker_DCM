@@ -533,9 +533,6 @@ class Application:
                         self.__current_serial = self.__uart.ser.port
                         self.__save_device(self.__current_serial)
                         self.__pump_egram()
-
-                        import threading
-                        threading.Thread(target=self.__uart.test_receive, daemon=True).start()
                     
                     else:
                         self.__current_serial = None
