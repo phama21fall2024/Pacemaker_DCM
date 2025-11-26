@@ -40,5 +40,16 @@
     "states": {
         "Group28": "VVIR"
     },
-    "devices": {}
+    "devices": {
+        "Group28": {
+            "000000123456": {
+                "device_id": "UNC",
+                "last_used": "2025-11-26 17:22"
+            },
+            "COM6": {
+                "device_id": "Unc",
+                "last_used": "2025-11-26 17:22"
+            }
+        }
+    }
 }

@@ -91,7 +91,7 @@ class WelcomeScreen:
 
         # Get last device
         devices = self._db.get_devices(username)
-        last_device = devices[-1] if devices else "-"
+        last_device = list(devices.keys())[-1] if devices else "-"
 
         # Get last mode
         mode = self._db.get_state(username) or "-"

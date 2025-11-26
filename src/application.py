@@ -2,9 +2,9 @@ import tkinter as tk
 from tkinter import messagebox
 from rounding_helper import RoundingHelper
 import serial.tools.list_ports
-import send_uart
+import uart_comm
 import egram_manager
-from uart_receiver import UARTReceiver
+import uart_comm
 
 
 class Application:
@@ -15,7 +15,7 @@ class Application:
         self.__logout_comp = logout
         self.__serial_port = None
         self.__current_serial = None
-        self.__uart_receiver = None
+        self.__uart = None
         self.__egram_queue = egram_manager.FloatQueue()
 
         self.__mode_parameters = {
@@ -473,12 +473,15 @@ class Application:
         messagebox.showinfo("Saved", f"{msg} (Mode: {mode})")
 
     def __send_to_device(self):
-        sender = send_uart.UARTSender(receiver_ref=self.__uart_receiver)
         try:
-            sender.send_to_device(self.__username)
+            if not self.__uart:
+                self.__uart = uart_comm.UARTComm(queue=self.__egram_queue)
+
+            self.__uart.send_to_device(self.__username)
             messagebox.showinfo("Success", "Parameters sent.")
         except Exception as e:
             messagebox.showerror("UART Error", str(e))
+
 
     def __save_device(self, serial_number):
         saved_id = self.__db.get_device_id(self.__username, serial_number)
@@ -521,20 +524,41 @@ class Application:
                 self.__save_device(serial_number)
                 self.__set_led(True)
 
-                if not self.__uart_receiver:
-                    self.__uart_receiver = UARTReceiver(self.__egram_queue, baudrate=9600)
-                    self.__uart_receiver.start()
+                if not self.__uart:
+                    self.__uart = uart_comm.UARTComm(queue=self.__egram_queue)
+
+                    ok = self.__uart.connect()
+
+                    if ok:
+                        self.__current_serial = self.__uart.ser.port
+                        self.__save_device(self.__current_serial)
+                        self.__pump_egram()
+                        
+                    else:
+                        self.__current_serial = None
+
 
         else:
             self.__current_serial = None
+            self.__serial_label.config(text="Serial: None", fg="gray")
             self.__set_led(False)
 
-            if self.__uart_receiver:
-                self.__uart_receiver.stop()
-                self.__uart_receiver = None
+            if self.__uart:
+                try:
+                    self.__uart.ser.close()
+                except:
+                    pass
+                self.__uart = None
+
 
         self.__update_serial_label()
         self.__root.after(2000, self.__check_device)
+
+    def __pump_egram(self):
+        if self.__uart:
+            self.__uart.poll_egram()
+        self.__root.after(40, self.__pump_egram)
+
 
 
     def __set_led(self, connected):
@@ -561,8 +585,7 @@ class Application:
 
 
     def __logout(self):
-        if self.__serial_port and getattr(self.__serial_port, "is_open", False):
-            self.__serial_port.close()
-        if self.__uart_receiver:
-            self.__uart_receiver.stop()
+        if self.__uart and self.__uart.ser:
+            self.__uart.ser.close()
+
         self.__logout_comp()
