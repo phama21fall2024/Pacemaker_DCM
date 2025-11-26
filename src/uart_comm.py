@@ -39,7 +39,7 @@ PARAM_ORDER = [
 
 ECG_FLOATS = 20
 ECG_PACKET_LEN = calcsize(f"={ECG_FLOATS}f")
-REQ_ECG = pack("=B33x", 0x55)
+REQ_ECG = b"\x16\x47" + b"\x00"*50
 ECG_TOTAL_BYTES = ECG_PACKET_LEN + 1
 
 
@@ -188,26 +188,14 @@ class UARTComm:
             json.dump(data, f, indent=2)
 
     def test_receive(self):
-        if not self.ser or not self.ser.is_open:
-            print("SERIAL NOT OPEN")
-            return
-
-        print("RX TEST STARTED (press Ctrl+C to stop)")
+        print("LISTEN-ONLY MODE")
+        print("Waiting for incoming data...")
 
         while True:
-            try:
-                n = self.ser.in_waiting
-                if n > 0:
-                    data = self.ser.read(n)
-                    print("RAW RX:", data.hex())
-                else:
-                    time.sleep(0.1)
-
-            except KeyboardInterrupt:
-                print("RX TEST STOPPED")
-                return
-
-            except Exception as e:
-                print("RX ERROR:", e)
-                return
-
+            n = self.ser.in_waiting
+            if n > 0:
+                data = self.ser.read(n)
+                print("RX RAW:", data.hex())
+            else:
+                print("...no data")
+            time.sleep(0.5)
