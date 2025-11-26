@@ -107,28 +107,32 @@ class UARTComm:
 
 
     def _build_packet(self, mode, params):
+        TYPE = 1  
 
         values = [
+            TYPE,
             MODE_BITMASK.get(mode, 0),
+
             int(params.get("Lower Rate Limit", 60)),
             int(params.get("Upper Rate Limit", 120)),
             float(params.get("Atrial Amplitude", 5)),
-            int(params.get("Atrial Pulse Width", 1)),
-            float(params.get("Atrial Sensitivity", 0)),
+            float(params.get("Atrial Pulse Width", 1)) ,
+            float(params.get("Atrial Sensitivity", 0)) ,
             float(params.get("Ventricular Amplitude", 5)),
-            int(params.get("Ventricular Pulse Width", 1)),
+            float(params.get("Ventricular Pulse Width", 1)),
             float(params.get("Ventricular Sensitivity", 0)),
             int(params.get("VRP", 320)),
             int(params.get("ARP", 250)),
             int(params.get("PVARP", 250)),
+            int(params.get("Maximum Sensor Rate", 120)),
             int(params.get("Reaction Time", 30)),
             int(params.get("Response Factor", 8)),
             int(params.get("Recovery Time", 5)),
             int(params.get("Activity Threshold", 4)),
-            int(params.get("Maximum Sensor Rate", 120))
         ]
 
-        return pack(PARAM_FORMAT, *values)
+        return pack("=BBBB6f3H5B", *values)
+
 
 
     def poll_egram(self):
