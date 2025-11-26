@@ -54,10 +54,11 @@ class EgramGraph(tk.Frame):
         axis.tick_params(axis='both', length=4)  
 
     def update_plot(self):
-        if self.queue.empty():
-            fakeA = random.uniform(0, 5)
-            fakeV = random.uniform(0, 5)
-            self.queue.push({"A": fakeA, "V": fakeV})
+        
+        #if self.queue.empty():
+            #fakeA = random.uniform(0, 5)
+            #fakeV = random.uniform(0, 5)
+            #self.queue.push({"A": fakeA, "V": fakeV})
 
         while not self.queue.empty():
             sample = self.queue.pop()
