@@ -5,6 +5,7 @@ import serial.tools.list_ports
 import uart_comm
 import egram_manager
 import uart_comm
+from reports import generate_report
 
 
 class Application:
@@ -318,6 +319,10 @@ class Application:
         tk.Button(self.__param_frame, text="Send", bg="lightyellow",
                 font=("Arial", 10, "bold"), width=10,
                 command=self.__send_to_device).grid(row=row, column=1, pady=8)
+    
+        tk.Button(self.__param_frame, text="Report", bg="lightblue",
+          font=("Arial", 10, "bold"), width=10,
+          command=self.__generate_report).grid(row=row, column=2, pady=8)
 
 
     
@@ -553,6 +558,44 @@ class Application:
 
         self.__update_serial_label()
         self.__root.after(2000, self.__check_device)
+
+    def __generate_report(self):
+        mode = self.__db.get_state(self.__username)
+
+        if not mode:
+            messagebox.showerror("Error", "No mode selected.")
+            return
+
+        device_id = self.__device_id_var.get() or "UNKNOWN"
+        dcm_serial = self.__username
+
+        parameters = []
+        labels = []
+
+        for p in self.__mode_parameters[mode]:
+            labels.append(p)
+            parameters.append(self.__parameters[p].get())
+
+        output_name = f"{self.__username}_{mode}_report.pdf".replace(" ", "_")
+
+        try:
+            generate_report(
+                device_model="Pacemaker",
+                device_serial=device_id,
+                application_model="Pacemaker",
+                application_version="1.0",
+                dcm_serial=dcm_serial,
+                report_name=f"{mode} Parameter Report",
+                labels=labels,
+                parameters=parameters,
+                output_filename=output_name
+            )
+
+            messagebox.showinfo("Report Generated", f"Saved as {output_name}")
+
+        except Exception as e:
+            messagebox.showerror("PDF Error", str(e))
+
 
     def __pump_egram(self):
         if self.__uart:
