@@ -20,25 +20,78 @@
                 "Recovery Time": 5
             },
             "AAIR": {
-                "Lower Rate Limit": 60,
+                "Lower Rate Limit": 175,
                 "Upper Rate Limit": 120,
                 "Maximum Sensor Rate": 120,
+                "Atrial Amplitude": 2.4,
+                "Atrial Pulse Width": 30.0,
+                "Atrial Sensitivity": 0.0,
+                "ARP": 335.0,
+                "PVARP": 150.0,
+                "Hysteresis": 0,
+                "Rate Smoothing": 0.0,
+                "Activity Threshold": 4,
+                "Reaction Time": 30,
+                "Response Factor": 11,
+                "Recovery Time": 13
+            },
+            "AOOR": {
+                "Lower Rate Limit": 60,
+                "Upper Rate Limit": 120,
+                "Atrial Amplitude": 5.0,
+                "Atrial Pulse Width": 1.0,
+                "Activity Threshold": 4,
+                "Reaction Time": 50,
+                "Response Factor": 5,
+                "Recovery Time": 5
+            },
+            "AOO": {
+                "Lower Rate Limit": 60,
+                "Upper Rate Limit": 120,
+                "Atrial Amplitude": 5.0,
+                "Atrial Pulse Width": 1.0
+            },
+            "VOOR": {
+                "Lower Rate Limit": 60,
+                "Upper Rate Limit": 120,
+                "Ventricular Amplitude": 5.0,
+                "Ventricular Pulse Width": 1.0,
+                "Activity Threshold": 4,
+                "Reaction Time": 30,
+                "Response Factor": 8,
+                "Recovery Time": 5
+            },
+            "VOO": {
+                "Lower Rate Limit": 60,
+                "Upper Rate Limit": 120,
+                "Ventricular Amplitude": 5.0,
+                "Ventricular Pulse Width": 1.0
+            },
+            "AAI": {
+                "Lower Rate Limit": 60,
+                "Upper Rate Limit": 120,
                 "Atrial Amplitude": 5.0,
                 "Atrial Pulse Width": 1.0,
                 "Atrial Sensitivity": 0.0,
                 "ARP": 250.0,
                 "PVARP": 250.0,
                 "Hysteresis": 0,
-                "Rate Smoothing": 0.0,
-                "Activity Threshold": 4,
-                "Reaction Time": 30,
-                "Response Factor": 8,
-                "Recovery Time": 5
+                "Rate Smoothing": 0.0
+            },
+            "VVI": {
+                "Lower Rate Limit": 60,
+                "Upper Rate Limit": 120,
+                "Ventricular Amplitude": 5.0,
+                "Ventricular Pulse Width": 1.0,
+                "Ventricular Sensitivity": 0.0,
+                "VRP": 320.0,
+                "Hysteresis": 0,
+                "Rate Smoothing": 0.0
             }
         }
     },
     "states": {
-        "Group28": "VVIR"
+        "Group28": "AOOR"
     },
     "devices": {
         "Group28": {
