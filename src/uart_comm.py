@@ -18,7 +18,7 @@ ECG_HEADER = 0xAA   # Must match FPGA
 
 class UARTComm:
 
-    def __init__(self, queue=None, baudrate=115200):
+    def __init__(self, queue=None, baudrate=57600):
         self.db = DataManager()
         self.queue = queue
         self.baudrate = baudrate
@@ -41,7 +41,7 @@ class UARTComm:
 
         for p in ports:
             try:
-                self.ser = serial.Serial(p.device, self.baudrate, timeout=0)
+                self.ser = serial.Serial(p.device, self.baudrate, timeout=0.1)
                 print("CONNECTED:", p.device)
                 return True
             except Exception as e:

@@ -1,63 +1,9 @@
 {
     "users": {
-        "1": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
-        "Group28": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+        "1": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
     },
     "parameters": {
         "1": {
-            "VOOR": {
-                "Lower Rate Limit": 60,
-                "Upper Rate Limit": 100,
-                "Ventricular Amplitude": 5.0,
-                "Ventricular Pulse Width": 1.0,
-                "Activity Threshold": 4,
-                "Reaction Time": 30,
-                "Response Factor": 8,
-                "Recovery Time": 5
-            },
-            "AAIR": {
-                "Lower Rate Limit": 45,
-                "Upper Rate Limit": 130,
-                "Maximum Sensor Rate": 95,
-                "Atrial Amplitude": 5.0,
-                "Atrial Pulse Width": 1.0,
-                "Atrial Sensitivity": 0.0,
-                "ARP": 250.0,
-                "PVARP": 270.0,
-                "Hysteresis": 0,
-                "Rate Smoothing": 0.0,
-                "Activity Threshold": 7,
-                "Reaction Time": 20,
-                "Response Factor": 8,
-                "Recovery Time": 5
-            },
-            "AOOR": {
-                "Lower Rate Limit": 60,
-                "Upper Rate Limit": 140,
-                "Atrial Amplitude": 5.0,
-                "Atrial Pulse Width": 19.0,
-                "Activity Threshold": 4,
-                "Reaction Time": 20,
-                "Response Factor": 8,
-                "Recovery Time": 5
-            },
-            "VVIR": {
-                "Lower Rate Limit": 60,
-                "Upper Rate Limit": 120,
-                "Maximum Sensor Rate": 120,
-                "Ventricular Amplitude": 5.0,
-                "Ventricular Pulse Width": 1.0,
-                "Ventricular Sensitivity": 0.0,
-                "VRP": 320.0,
-                "Hysteresis": 0,
-                "Rate Smoothing": 0.0,
-                "Activity Threshold": 4,
-                "Reaction Time": 30,
-                "Response Factor": 8,
-                "Recovery Time": 5
-            }
-        },
-        "Group28": {
             "AAIR": {
                 "Lower Rate Limit": 60,
                 "Upper Rate Limit": 120,
@@ -73,29 +19,53 @@
                 "Reaction Time": 30,
                 "Response Factor": 8,
                 "Recovery Time": 5
+            },
+            "VVIR": {
+                "Lower Rate Limit": 60,
+                "Upper Rate Limit": 145,
+                "Maximum Sensor Rate": 120,
+                "Ventricular Amplitude": 1.3,
+                "Ventricular Pulse Width": 1.0,
+                "Ventricular Sensitivity": 1.5,
+                "VRP": 445.0,
+                "Hysteresis": 0,
+                "Rate Smoothing": 0.0,
+                "Activity Threshold": 4,
+                "Reaction Time": 30,
+                "Response Factor": 8,
+                "Recovery Time": 5
+            },
+            "AOO": {
+                "Lower Rate Limit": 60,
+                "Upper Rate Limit": 120,
+                "Atrial Amplitude": 5.0,
+                "Atrial Pulse Width": 1.0
+            },
+            "VOOR": {
+                "Lower Rate Limit": 60,
+                "Upper Rate Limit": 120,
+                "Ventricular Amplitude": 5.0,
+                "Ventricular Pulse Width": 1.0,
+                "Activity Threshold": 4,
+                "Reaction Time": 30,
+                "Response Factor": 8,
+                "Recovery Time": 5
+            },
+            "AAI": {
+                "Lower Rate Limit": 60,
+                "Upper Rate Limit": 120,
+                "Atrial Amplitude": 5.0,
+                "Atrial Pulse Width": 1.0,
+                "Atrial Sensitivity": 0.0,
+                "ARP": 250.0,
+                "PVARP": 250.0,
+                "Hysteresis": 0,
+                "Rate Smoothing": 0.0
             }
         }
     },
     "states": {
-        "1": "VVIR",
-        "Group28": "AAIR"
+        "1": "VVIR"
     },
-    "devices": {
-        "1": {
-            "000000123456": {
-                "device_id": "NC",
-                "last_used": "2025-11-27 22:01"
-            },
-            "COM6": {
-                "device_id": "UNC",
-                "last_used": "2025-11-27 22:01"
-            }
-        },
-        "Group28": {
-            "000000123456": {
-                "device_id": "UNC",
-                "last_used": "2025-11-27 20:25"
-            }
-        }
-    }
+    "devices": {}
 }

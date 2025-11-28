@@ -9,11 +9,23 @@ from matplotlib.figure import Figure
 
 
 class FloatQueue:
-    def __init__(self):
+    def __init__(self, max_store=5000):
         self.buffer = deque()
+        self.history = []
+        self.max_store = max_store
 
     def push(self, sample):
-        self.buffer.append(sample)
+        if not isinstance(sample, dict):
+            return
+
+        if "A" not in sample and "V" not in sample:
+            return
+
+        self.buffer.append(sample.copy())
+
+        # Save for reports (limit size)
+        if len(self.history) < self.max_store:
+            self.history.append(sample.copy())
 
     def pop(self):
         if self.buffer:
@@ -23,6 +35,14 @@ class FloatQueue:
     def empty(self):
         return len(self.buffer) == 0
 
+    def get_report_data(self):
+        return list(self.history)
+
+    def clear_report_data(self):
+        self.history.clear()
+
+
+
 
 class EgramGraph(tk.Frame):
     def __init__(self, parent, queue, mode):
@@ -30,7 +50,7 @@ class EgramGraph(tk.Frame):
         self.queue = queue
         self.mode = mode
 
-        self.max_points = 30
+        self.max_points = 1000
         self.atrium_data = deque([0.0] * self.max_points, maxlen=self.max_points)
         self.vent_data = deque([0.0] * self.max_points, maxlen=self.max_points)
 

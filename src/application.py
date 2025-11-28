@@ -588,8 +588,10 @@ class Application:
                 report_name=f"{mode} Parameter Report",
                 labels=labels,
                 parameters=parameters,
+                egram_data=self.__egram_queue.get_report_data(),
                 output_filename=output_name
             )
+
 
             messagebox.showinfo("Report Generated", f"Saved as {output_name}")
 
