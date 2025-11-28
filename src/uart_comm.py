@@ -182,29 +182,24 @@ class UARTComm:
                     return parsed
 
 
-                if self.waiting_for_ecg and byte == ECG_HEADER:
+                if self.waiting_for_ecg:
 
-                    if self.ser.in_waiting < ECG_PACKET_LEN:
+                    a_raw = byte
+
+                    if self.ser.in_waiting < 1:
                         return None
 
-                    payload = self.ser.read(ECG_PACKET_LEN)
+                    v_raw = self.ser.read(1)[0]
 
-                    samples = unpack_from("=20f", payload)
-                    a = samples[:10]
-                    v = samples[10:]
-
-                    print("[ECG RECEIVED]")
-                    print("A:", a)
-                    print("V:", v)
+                    a_val = (a_raw / 255.0) * 5.0
+                    v_val = (v_raw / 255.0) * 5.0
 
                     if self.queue:
-                        self.queue.push({"A": a[-1], "V": v[-1]})
+                        self.queue.push({"A": a_val, "V": v_val})
 
-                    return a, v
-
+                    return a_val, v_val
 
                 else:
-                    # Drop garbage byte and resync
                     continue
 
         return None

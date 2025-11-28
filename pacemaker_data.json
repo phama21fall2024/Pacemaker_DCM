@@ -17,7 +17,7 @@
             },
             "AAIR": {
                 "Lower Rate Limit": 45,
-                "Upper Rate Limit": 100,
+                "Upper Rate Limit": 130,
                 "Maximum Sensor Rate": 95,
                 "Atrial Amplitude": 5.0,
                 "Atrial Pulse Width": 1.0,
@@ -38,6 +38,21 @@
                 "Atrial Pulse Width": 19.0,
                 "Activity Threshold": 4,
                 "Reaction Time": 20,
+                "Response Factor": 8,
+                "Recovery Time": 5
+            },
+            "VVIR": {
+                "Lower Rate Limit": 60,
+                "Upper Rate Limit": 120,
+                "Maximum Sensor Rate": 120,
+                "Ventricular Amplitude": 5.0,
+                "Ventricular Pulse Width": 1.0,
+                "Ventricular Sensitivity": 0.0,
+                "VRP": 320.0,
+                "Hysteresis": 0,
+                "Rate Smoothing": 0.0,
+                "Activity Threshold": 4,
+                "Reaction Time": 30,
                 "Response Factor": 8,
                 "Recovery Time": 5
             }
@@ -62,18 +77,18 @@
         }
     },
     "states": {
-        "1": "AAIR",
+        "1": "VVIR",
         "Group28": "AAIR"
     },
     "devices": {
         "1": {
             "000000123456": {
                 "device_id": "NC",
-                "last_used": "2025-11-27 21:00"
+                "last_used": "2025-11-27 22:01"
             },
             "COM6": {
                 "device_id": "UNC",
-                "last_used": "2025-11-27 21:00"
+                "last_used": "2025-11-27 22:01"
             }
         },
         "Group28": {
