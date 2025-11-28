@@ -40,24 +40,14 @@ class UARTComm:
             return False
 
         for p in ports:
-            if getattr(p, "vid", None) == 0x1366 and getattr(p, "pid", None) == 0x1015:
-                try:
-                    self.ser = serial.Serial(p.device, self.baudrate, timeout=0)
-                    print("CONNECTED (VID/PID):", p.device)
-                    return True
-                except Exception as e:
-                    print("VID/PID PORT OPEN FAILED:", p.device, e)
-
-        for p in ports:
             try:
-                test = serial.Serial(p.device, self.baudrate, timeout=0)
-                self.ser = test
-                print("CONNECTED (FALLBACK):", p.device)
+                self.ser = serial.Serial(p.device, self.baudrate, timeout=0)
+                print("CONNECTED:", p.device)
                 return True
-            except Exception:
-                continue
+            except Exception as e:
+                print("FAILED:", p.device, e)
 
-        print("NO USABLE SERIAL PORT FOUND")
+        print("NO WORKING SERIAL PORT")
         return False
 
 
