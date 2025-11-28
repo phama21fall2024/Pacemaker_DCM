@@ -58,7 +58,7 @@ class Application:
 
         self.__egram_frame = tk.Frame(self.__root, bd=1, relief="solid", padx=10, pady=10)
         self.__egram_frame.place(relx=0.65, rely=0.58, anchor="center")  # left edge of right half
-        self.__egram_frame.config(width=1000, height=600)
+        self.__egram_frame.config(width=980, height=600)
         self.__egram_frame.grid_propagate(False)
 
         switch_frame = tk.Frame(self.__egram_frame)
@@ -132,7 +132,7 @@ class Application:
         self.__param_frame = tk.Frame(self.__root, bd=1, relief="solid", padx=10, pady=10)
         self.__param_frame.place(relx=0.17, rely=0.58, anchor="center")
 
-        self.__param_frame.config(width=440, height=600)
+        self.__param_frame.config(width=460, height=600)
         self.__param_frame.grid_propagate(False)
 
         tk.Label(self.__param_frame, text="Parameters",
@@ -206,7 +206,7 @@ class Application:
         }
 
 
-        existing = self.__db.get_parameters(self.__username)
+        existing = self.__db.get_parameters(self.__username, state_name=self.__db.get_state(self.__username))
         if existing:
             for p, v in self.__parameters.items():
                 if p in existing:
@@ -314,15 +314,15 @@ class Application:
         # Save and Send buttons
         tk.Button(self.__param_frame, text="Save", bg="lightgreen",
                 font=("Arial", 10, "bold"), width=10,
-                command=self.__save_parameters).grid(row=row, column=0, pady=8)
+                command=self.__save_parameters).grid(row=row, column=0, pady=8, padx=(0,20))
 
         tk.Button(self.__param_frame, text="Send", bg="lightyellow",
                 font=("Arial", 10, "bold"), width=10,
-                command=self.__send_to_device).grid(row=row, column=1, pady=8)
+                command=self.__send_to_device).grid(row=row, column=1, pady=8, padx=(0,20))
     
         tk.Button(self.__param_frame, text="Report", bg="lightblue",
           font=("Arial", 10, "bold"), width=10,
-          command=self.__generate_report).grid(row=row, column=2, pady=8)
+          command=self.__generate_report).grid(row=row, column=2, pady=8, padx=(0,20))
 
 
     
@@ -391,24 +391,45 @@ class Application:
 
         tk.Button(frame, text="Save", width=12, command=save_id).pack(anchor="e")
 
+    def __send_to_device(self):
+        try:
+            mode = self.__db.get_state(self.__username)
+            allowed = self.__mode_parameters.get(mode, [])
+
+            current = {}
+            for p in allowed:
+                current[p] = self.__parameters[p].get()
+
+            self.__db.save_parameters(self.__username, current, state_name=mode)
+            self.__db.save_state(self.__username, mode)
+
+            if not self.__uart:
+                self.__uart = uart_comm.UARTComm(queue=self.__egram_queue)
+
+            self.__uart.send_to_device(self.__username)
+            messagebox.showinfo("Success", "Parameters sent.")
+
+        except Exception as e:
+            messagebox.showerror("UART Error", str(e))
+
 
     def __select_state(self, name):
         for s, b in self.__state_buttons.items():
             b.config(bg="lightgreen" if s == name else "white")
 
-        # Save last state's values before switching
         last = self.__db.get_state(self.__username)
+
         if last:
-            allowed_last = self.__mode_parameters.get(last, [])
-            saved = {p: self.__parameters[p].get() for p in allowed_last}
+            saved = {}
+            for p in self.__mode_parameters.get(last, []):
+                saved[p] = self.__parameters[p].get()
             self.__db.save_parameters(self.__username, saved, state_name=last)
 
-        # Update DB
         self.__db.save_state(self.__username, name)
+
         params = self.__db.get_parameters(self.__username, state_name=name)
         allowed = self.__mode_parameters.get(name, [])
 
-        # FULL defaults including NEW PARAMETERS
         defaults = {
             "Lower Rate Limit": 60,
             "Upper Rate Limit": 120,
@@ -430,16 +451,21 @@ class Application:
             "Recovery Time": 5,
         }
 
-        # Load parameters into Tk variables
-        for p, v in self.__parameters.items():
-            if p in allowed:
-                if params and p in params:
-                    v.set(float(params[p]))
-                else:
-                    v.set(defaults[p])
+        for p in allowed:
+            if params and p in params:
+                self.__parameters[p].set(float(params[p]))
+            else:
+                self.__parameters[p].set(defaults[p])
 
-        # Rebuild rows
         self.__rebuild_parameter_rows(name)
+
+        current = {}
+        for p in allowed:
+            current[p] = self.__parameters[p].get()
+
+        self.__db.save_parameters(self.__username, current, state_name=name)
+
+
 
 
     def __create_serial_display(self):
@@ -466,6 +492,7 @@ class Application:
             return
 
         allowed = self.__mode_parameters.get(mode, [])
+
         lrl = self.__parameters["Lower Rate Limit"].get()
         url = self.__parameters["Upper Rate Limit"].get()
 
@@ -474,42 +501,15 @@ class Application:
             return
 
         data = {p: self.__parameters[p].get() for p in allowed}
+
         _, msg = self.__db.save_parameters(self.__username, data, state_name=mode)
         messagebox.showinfo("Saved", f"{msg} (Mode: {mode})")
 
-    def __send_to_device(self):
-        try:
-            if not self.__uart:
-                self.__uart = uart_comm.UARTComm(queue=self.__egram_queue)
 
-            self.__uart.send_to_device(self.__username)
-            messagebox.showinfo("Success", "Parameters sent.")
-        except Exception as e:
-            messagebox.showerror("UART Error", str(e))
 
 
     def __save_device(self, serial_number):
-        saved_id = self.__db.get_device_id(self.__username, serial_number)
-
-        if saved_id is None:
-            popup = tk.Toplevel(self.__root)
-            popup.title("Device ID")
-
-            tk.Label(popup, text="Enter Device ID:").pack(pady=5)
-            dev_var = tk.StringVar()
-            entry = tk.Entry(popup, textvariable=dev_var)
-            entry.pack(pady=5)
-            entry.focus()
-
-            def save_and_close():
-                device_id = dev_var.get().strip()
-                if device_id:
-                    self.__db.save_device_id(self.__username, serial_number, device_id)
-                popup.destroy()
-
-            tk.Button(popup, text="Save", command=save_and_close).pack(pady=5)
-        else:
-            self.__db.update_device_last_used(self.__username, serial_number)
+        self.__db.update_device_last_used(self.__username, serial_number)
 
 
     def __check_device(self):
@@ -610,19 +610,20 @@ class Application:
                                    fg="green" if connected else "red")
 
     def __update_serial_label(self):
+        # Stop if widget no longer exists
+        if not self.__serial_label.winfo_exists():
+            return
+
         if self.__current_serial:
             device_id = self.__db.get_device_id(self.__username, self.__current_serial)
 
-            # Only update the entry if the value actually changed
             if device_id:
                 if self.__device_id_var.get() != device_id:
                     self.__device_id_var.set(device_id)
 
                 self.__serial_label.config(text=f"Device: {device_id}", fg="black")
-
             else:
                 self.__serial_label.config(text=f"Serial: {self.__current_serial}", fg="black")
-
         else:
             self.__serial_label.config(text="Serial: None", fg="gray")
 

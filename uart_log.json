@@ -1,82 +1,65 @@
 [
   {
     "username": "Group28",
-    "mode": "VVIR",
-    "packet_hex": "083c7878000001f40000006400000000000001400000000000041e0805",
-    "packet_len": 29,
+    "mode": "AOOR",
+    "packet_hex": "053c780000a0400000803f000000000000a0400000803f000000004001fa00fa00781e080504",
     "params": {
       "Lower Rate Limit": 60,
       "Upper Rate Limit": 120,
-      "Maximum Sensor Rate": 120,
-      "Ventricular Amplitude": 5.0,
-      "Ventricular Pulse Width": 1.0,
-      "Ventricular Sensitivity": 0.0,
-      "VRP": 320.0,
-      "Hysteresis": 0,
-      "Rate Smoothing": 0.0,
+      "Atrial Amplitude": 5.0,
+      "Atrial Pulse Width": 1.0,
       "Activity Threshold": 4,
       "Reaction Time": 30,
       "Response Factor": 8,
       "Recovery Time": 5
     },
-    "timestamp": "2025-11-26T16:30:02"
+    "timestamp": "2025-11-27T19:37:58"
   },
   {
     "username": "Group28",
-    "mode": "VVIR",
-    "packet_hex": "083c7878000001f40000006400000000000001400000000000041e0805",
-    "packet_len": 29,
+    "mode": "AOOR",
+    "packet_hex": "053c780000a0400000803f000000000000a0400000803f000000004001fa00fa00781e080504",
     "params": {
       "Lower Rate Limit": 60,
       "Upper Rate Limit": 120,
-      "Maximum Sensor Rate": 120,
-      "Ventricular Amplitude": 5.0,
-      "Ventricular Pulse Width": 1.0,
-      "Ventricular Sensitivity": 0.0,
-      "VRP": 320.0,
-      "Hysteresis": 0,
-      "Rate Smoothing": 0.0,
+      "Atrial Amplitude": 5.0,
+      "Atrial Pulse Width": 1.0,
       "Activity Threshold": 4,
       "Reaction Time": 30,
       "Response Factor": 8,
       "Recovery Time": 5
     },
-    "timestamp": "2025-11-26T16:31:05"
+    "timestamp": "2025-11-27T19:38:24"
   },
   {
     "username": "Group28",
-    "mode": "VVIR",
-    "packet_hex": "083c7878000001f40000006400000000000001400000000000041e0805",
-    "packet_len": 29,
+    "mode": "AOOR",
+    "packet_hex": "053c780000a0400000803f000000000000a0400000803f000000004001fa00fa00781e080504",
     "params": {
       "Lower Rate Limit": 60,
       "Upper Rate Limit": 120,
-      "Maximum Sensor Rate": 120,
-      "Ventricular Amplitude": 5.0,
-      "Ventricular Pulse Width": 1.0,
-      "Ventricular Sensitivity": 0.0,
-      "VRP": 320.0,
-      "Hysteresis": 0,
-      "Rate Smoothing": 0.0,
+      "Atrial Amplitude": 5.0,
+      "Atrial Pulse Width": 1.0,
       "Activity Threshold": 4,
       "Reaction Time": 30,
       "Response Factor": 8,
       "Recovery Time": 5
     },
-    "timestamp": "2025-11-26T16:36:52"
+    "timestamp": "2025-11-27T19:38:32"
   },
   {
     "username": "Group28",
-    "mode": "VVIR",
-    "packet_hex": "16553c780000a040010000a04001fa004001000000000000000008fa00000080400000000000003e400000000000001440780008",
+    "mode": "AAIR",
+    "packet_hex": "073c780000a0400000803f000000000000a0400000803f000000004001fa00fa00781e080504",
     "params": {
       "Lower Rate Limit": 60,
       "Upper Rate Limit": 120,
       "Maximum Sensor Rate": 120,
-      "Ventricular Amplitude": 5.0,
-      "Ventricular Pulse Width": 1.0,
-      "Ventricular Sensitivity": 0.0,
-      "VRP": 320.0,
+      "Atrial Amplitude": 5.0,
+      "Atrial Pulse Width": 1.0,
+      "Atrial Sensitivity": 0.0,
+      "ARP": 250.0,
+      "PVARP": 250.0,
       "Hysteresis": 0,
       "Rate Smoothing": 0.0,
       "Activity Threshold": 4,
@@ -84,20 +67,21 @@
       "Response Factor": 8,
       "Recovery Time": 5
     },
-    "timestamp": "2025-11-26T16:49:21"
+    "timestamp": "2025-11-27T19:41:00"
   },
   {
     "username": "Group28",
-    "mode": "VVIR",
-    "packet_hex": "16553c780000a040010000a04001fa004001000000000000000008fa00000080400000000000003e400000000000001440780008",
+    "mode": "AAIR",
+    "packet_hex": "073c780000a0400000803f000000000000a0400000803f000000004001fa00fa00781e080504",
     "params": {
       "Lower Rate Limit": 60,
       "Upper Rate Limit": 120,
       "Maximum Sensor Rate": 120,
-      "Ventricular Amplitude": 5.0,
-      "Ventricular Pulse Width": 1.0,
-      "Ventricular Sensitivity": 0.0,
-      "VRP": 320.0,
+      "Atrial Amplitude": 5.0,
+      "Atrial Pulse Width": 1.0,
+      "Atrial Sensitivity": 0.0,
+      "ARP": 250.0,
+      "PVARP": 250.0,
       "Hysteresis": 0,
       "Rate Smoothing": 0.0,
       "Activity Threshold": 4,
@@ -105,20 +89,21 @@
       "Response Factor": 8,
       "Recovery Time": 5
     },
-    "timestamp": "2025-11-26T16:51:39"
+    "timestamp": "2025-11-27T19:41:11"
   },
   {
     "username": "Group28",
-    "mode": "VVIR",
-    "packet_hex": "1655083c78780000a04001000000000000a04001000000004001fa00fa0000001e080504",
+    "mode": "AAIR",
+    "packet_hex": "073c780000a0400000803f000000000000a0400000803f000000004001fa00fa00781e080504",
     "params": {
       "Lower Rate Limit": 60,
       "Upper Rate Limit": 120,
       "Maximum Sensor Rate": 120,
-      "Ventricular Amplitude": 5.0,
-      "Ventricular Pulse Width": 1.0,
-      "Ventricular Sensitivity": 0.0,
-      "VRP": 320.0,
+      "Atrial Amplitude": 5.0,
+      "Atrial Pulse Width": 1.0,
+      "Atrial Sensitivity": 0.0,
+      "ARP": 250.0,
+      "PVARP": 250.0,
       "Hysteresis": 0,
       "Rate Smoothing": 0.0,
       "Activity Threshold": 4,
@@ -126,174 +111,6 @@
       "Response Factor": 8,
       "Recovery Time": 5
     },
-    "timestamp": "2025-11-26T17:03:15"
-  },
-  {
-    "username": "Group28",
-    "mode": "VVIR",
-    "packet_hex": "083c780000a04001000000000000a04001000000004001fa00fa001e08050478",
-    "params": {
-      "Lower Rate Limit": 60,
-      "Upper Rate Limit": 120,
-      "Maximum Sensor Rate": 120,
-      "Ventricular Amplitude": 5.0,
-      "Ventricular Pulse Width": 1.0,
-      "Ventricular Sensitivity": 0.0,
-      "VRP": 320.0,
-      "Hysteresis": 0,
-      "Rate Smoothing": 0.0,
-      "Activity Threshold": 4,
-      "Reaction Time": 30,
-      "Response Factor": 8,
-      "Recovery Time": 5
-    },
-    "timestamp": "2025-11-26T17:14:43"
-  },
-  {
-    "username": "Group28",
-    "mode": "VVIR",
-    "packet_hex": "083c780000a04001000000000000a04001000000004001fa00fa001e08050478",
-    "params": {
-      "Lower Rate Limit": 60,
-      "Upper Rate Limit": 120,
-      "Maximum Sensor Rate": 120,
-      "Ventricular Amplitude": 5.0,
-      "Ventricular Pulse Width": 1.0,
-      "Ventricular Sensitivity": 0.0,
-      "VRP": 320.0,
-      "Hysteresis": 0,
-      "Rate Smoothing": 0.0,
-      "Activity Threshold": 4,
-      "Reaction Time": 30,
-      "Response Factor": 8,
-      "Recovery Time": 5
-    },
-    "timestamp": "2025-11-26T17:17:59"
-  },
-  {
-    "username": "Group28",
-    "mode": "VVIR",
-    "packet_hex": "083c780000a04001000000000000a04001000000004001fa00fa001e08050478",
-    "params": {
-      "Lower Rate Limit": 60,
-      "Upper Rate Limit": 120,
-      "Maximum Sensor Rate": 120,
-      "Ventricular Amplitude": 5.0,
-      "Ventricular Pulse Width": 1.0,
-      "Ventricular Sensitivity": 0.0,
-      "VRP": 320.0,
-      "Hysteresis": 0,
-      "Rate Smoothing": 0.0,
-      "Activity Threshold": 4,
-      "Reaction Time": 30,
-      "Response Factor": 8,
-      "Recovery Time": 5
-    },
-    "timestamp": "2025-11-26T17:22:33"
-  },
-  {
-    "username": "Group28",
-    "mode": "VVIR",
-    "packet_hex": "083c780000a04001000000000000a04001000000004001fa00fa001e08050478",
-    "params": {
-      "Lower Rate Limit": 60,
-      "Upper Rate Limit": 120,
-      "Maximum Sensor Rate": 120,
-      "Ventricular Amplitude": 5.0,
-      "Ventricular Pulse Width": 1.0,
-      "Ventricular Sensitivity": 0.0,
-      "VRP": 320.0,
-      "Hysteresis": 0,
-      "Rate Smoothing": 0.0,
-      "Activity Threshold": 4,
-      "Reaction Time": 30,
-      "Response Factor": 8,
-      "Recovery Time": 5
-    },
-    "timestamp": "2025-11-26T17:26:50"
-  },
-  {
-    "username": "Group28",
-    "mode": "VVIR",
-    "packet_hex": "083c780000a04001000000000000a04001000000004001fa00fa001e08050478",
-    "params": {
-      "Lower Rate Limit": 60,
-      "Upper Rate Limit": 120,
-      "Maximum Sensor Rate": 120,
-      "Ventricular Amplitude": 5.0,
-      "Ventricular Pulse Width": 1.0,
-      "Ventricular Sensitivity": 0.0,
-      "VRP": 320.0,
-      "Hysteresis": 0,
-      "Rate Smoothing": 0.0,
-      "Activity Threshold": 4,
-      "Reaction Time": 30,
-      "Response Factor": 8,
-      "Recovery Time": 5
-    },
-    "timestamp": "2025-11-26T17:27:53"
-  },
-  {
-    "username": "Group28",
-    "mode": "VVIR",
-    "packet_hex": "083c780000a04001000000000000a04001000000004001fa00fa001e08050478",
-    "params": {
-      "Lower Rate Limit": 60,
-      "Upper Rate Limit": 120,
-      "Maximum Sensor Rate": 120,
-      "Ventricular Amplitude": 5.0,
-      "Ventricular Pulse Width": 1.0,
-      "Ventricular Sensitivity": 0.0,
-      "VRP": 320.0,
-      "Hysteresis": 0,
-      "Rate Smoothing": 0.0,
-      "Activity Threshold": 4,
-      "Reaction Time": 30,
-      "Response Factor": 8,
-      "Recovery Time": 5
-    },
-    "timestamp": "2025-11-26T17:32:24"
-  },
-  {
-    "username": "Group28",
-    "mode": "VVIR",
-    "packet_hex": "083c780000a04001000000000000a04001000000004001fa00fa001e08050478",
-    "params": {
-      "Lower Rate Limit": 60,
-      "Upper Rate Limit": 120,
-      "Maximum Sensor Rate": 120,
-      "Ventricular Amplitude": 5.0,
-      "Ventricular Pulse Width": 1.0,
-      "Ventricular Sensitivity": 0.0,
-      "VRP": 320.0,
-      "Hysteresis": 0,
-      "Rate Smoothing": 0.0,
-      "Activity Threshold": 4,
-      "Reaction Time": 30,
-      "Response Factor": 8,
-      "Recovery Time": 5
-    },
-    "timestamp": "2025-11-26T17:50:52"
-  },
-  {
-    "username": "Group28",
-    "mode": "VVIR",
-    "packet_hex": "083c780000a04001000000000000a04001000000004001fa00fa001e08050478",
-    "params": {
-      "Lower Rate Limit": 60,
-      "Upper Rate Limit": 120,
-      "Maximum Sensor Rate": 120,
-      "Ventricular Amplitude": 5.0,
-      "Ventricular Pulse Width": 1.0,
-      "Ventricular Sensitivity": 0.0,
-      "VRP": 320.0,
-      "Hysteresis": 0,
-      "Rate Smoothing": 0.0,
-      "Activity Threshold": 4,
-      "Reaction Time": 30,
-      "Response Factor": 8,
-      "Recovery Time": 5
-    },
-    "timestamp": "2025-11-26T17:55:00"
+    "timestamp": "2025-11-27T19:42:37"
   }
 ]

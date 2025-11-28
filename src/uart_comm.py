@@ -2,10 +2,6 @@ from datamanager import DataManager
 import serial
 import serial.tools.list_ports
 from struct import pack, unpack_from, calcsize
-import time
-import json
-import os
-from datetime import datetime
 from threading import Lock
 
 
@@ -14,33 +10,10 @@ MODE_BITMASK = {
     "AOOR": 5, "VOOR": 6, "AAIR": 7, "VVIR": 8
 }
 
-PARAM_FORMAT = "=3BfB2fBf3H5B"
-
-PARAM_ORDER = [
-    "Mode",
-    "Lower Rate Limit",
-    "Upper Rate Limit",
-    "Atrial Amplitude",
-    "Atrial Pulse Width",
-    "Atrial Sensitivity",
-    "Ventricular Amplitude",
-    "Ventricular Pulse Width",
-    "Ventricular Sensitivity",
-    "VRP",
-    "ARP",
-    "PVARP",
-    "Reaction Time",
-    "Response Factor",
-    "Recovery Time",
-    "Activity Threshold",
-    "Maximum Sensor Rate"
-]
-
-
 ECG_FLOATS = 20
-ECG_PACKET_LEN = calcsize(f"={ECG_FLOATS}f")
-REQ_ECG = b"\x16\x47" + b"\x00"*50
-ECG_TOTAL_BYTES = ECG_PACKET_LEN + 1
+ECG_PACKET_LEN = calcsize("=20f")
+
+ECG_HEADER = 0xAA   # Must match FPGA
 
 
 class UARTComm:
@@ -52,6 +25,12 @@ class UARTComm:
         self.ser = None
         self.lock = Lock()
 
+        self.waiting_for_echo = False
+        self.waiting_for_ecg = False
+
+        self.ECHO_FMT = "=BBB6f3H5B"
+        self.ECHO_LEN = calcsize(self.ECHO_FMT)
+
 
     def connect(self):
         ports = list(serial.tools.list_ports.comports())
@@ -60,21 +39,25 @@ class UARTComm:
             print("NO SERIAL DEVICES FOUND")
             return False
 
-        print("AVAILABLE PORTS:")
         for p in ports:
-            print(" ", p.device, "-", p.description)
-
-        for p in ports:
-            if p.vid == 0x1366 and p.pid == 0x1015:
+            if getattr(p, "vid", None) == 0x1366 and getattr(p, "pid", None) == 0x1015:
                 try:
-                    self.ser = serial.Serial(p.device, self.baudrate, timeout   =0)
-                    print("CONNECTED:", p.device)
+                    self.ser = serial.Serial(p.device, self.baudrate, timeout=0)
+                    print("CONNECTED (VID/PID):", p.device)
                     return True
                 except Exception as e:
-                    print("OPEN FAILED:", e)
-                    return False
+                    print("VID/PID PORT OPEN FAILED:", p.device, e)
 
-        print("PACEMAKER NOT FOUND (VID/PID mismatch)")
+        for p in ports:
+            try:
+                test = serial.Serial(p.device, self.baudrate, timeout=0)
+                self.ser = test
+                print("CONNECTED (FALLBACK):", p.device)
+                return True
+            except Exception:
+                continue
+
+        print("NO USABLE SERIAL PORT FOUND")
         return False
 
 
@@ -82,7 +65,6 @@ class UARTComm:
         if self.ser:
             self.ser.close()
             self.ser = None
-            print("SERIAL CLOSED")
 
 
     def send_to_device(self, username):
@@ -92,101 +74,147 @@ class UARTComm:
         if not self.ser or not self.ser.is_open:
             raise Exception("Device not connected")
 
-        if not mode or not params:
-            raise Exception("Invalid mode or parameters")
-
         packet = self._build_packet(mode, params)
 
         with self.lock:
+            self.ser.reset_input_buffer()
+            self.ser.reset_output_buffer()
             self.ser.write(packet)
+            self.ser.flush()
+
+        self.waiting_for_echo = True
+        self.waiting_for_ecg = True
 
         print("TX:", packet.hex())
-        self._log(username, mode, params, packet)
+        print("MODE SENT:", mode)
 
         return packet
 
 
+
     def _build_packet(self, mode, params):
-        TYPE = 1  
+
+        full = {
+            "Lower Rate Limit": 60,
+            "Upper Rate Limit": 120,
+            "Atrial Amplitude": 5,
+            "Atrial Pulse Width": 1,
+            "Atrial Sensitivity": 0,
+            "Ventricular Amplitude": 5,
+            "Ventricular Pulse Width": 1,
+            "Ventricular Sensitivity": 0,
+            "VRP": 320,
+            "ARP": 250,
+            "PVARP": 250,
+            "Maximum Sensor Rate": 120,
+            "Reaction Time": 30,
+            "Response Factor": 8,
+            "Recovery Time": 5,
+            "Activity Threshold": 4
+        }
+
+        if params:
+            full.update(params)
+
+        thr = full["Activity Threshold"]
+        if isinstance(thr, str):
+            mapping = {
+                "V-Low": 1, "Low": 2, "Med-Low": 3,
+                "Med": 4, "Med-High": 5, "High": 6, "V-High": 7
+            }
+            full["Activity Threshold"] = mapping.get(thr, 4)
+        else:
+            full["Activity Threshold"] = int(thr)
 
         values = [
-            TYPE,
             MODE_BITMASK.get(mode, 0),
-
-            int(params.get("Lower Rate Limit", 60)),
-            int(params.get("Upper Rate Limit", 120)),
-            float(params.get("Atrial Amplitude", 5)),
-            float(params.get("Atrial Pulse Width", 1)) ,
-            float(params.get("Atrial Sensitivity", 0)) ,
-            float(params.get("Ventricular Amplitude", 5)),
-            float(params.get("Ventricular Pulse Width", 1)),
-            float(params.get("Ventricular Sensitivity", 0)),
-            int(params.get("VRP", 320)),
-            int(params.get("ARP", 250)),
-            int(params.get("PVARP", 250)),
-            int(params.get("Maximum Sensor Rate", 120)),
-            int(params.get("Reaction Time", 30)),
-            int(params.get("Response Factor", 8)),
-            int(params.get("Recovery Time", 5)),
-            int(params.get("Activity Threshold", 4)),
+            int(full["Lower Rate Limit"]),
+            int(full["Upper Rate Limit"]),
+            float(full["Atrial Amplitude"]),
+            float(full["Atrial Pulse Width"]),
+            float(full["Atrial Sensitivity"]),
+            float(full["Ventricular Amplitude"]),
+            float(full["Ventricular Pulse Width"]),
+            float(full["Ventricular Sensitivity"]),
+            int(full["VRP"]),
+            int(full["ARP"]),
+            int(full["PVARP"]),
+            int(full["Maximum Sensor Rate"]),
+            int(full["Reaction Time"]),
+            int(full["Response Factor"]),
+            int(full["Recovery Time"]),
+            int(full["Activity Threshold"])
         ]
 
-        return pack("=BBBB6f3H5B", *values)
-
+        return pack(self.ECHO_FMT, *values)
 
 
     def poll_egram(self):
         if not self.ser or not self.ser.is_open:
             return None
 
-        with self.lock:
-            self.ser.write(REQ_ECG)
-
-        time.sleep(0.01)
-
-        if self.ser.in_waiting < ECG_TOTAL_BYTES:
+        if not (self.waiting_for_echo or self.waiting_for_ecg):
             return None
 
-        raw = self.ser.read(ECG_TOTAL_BYTES)
+        with self.lock:
 
-        control = raw[0]
-        data = raw[1:]
+            while self.ser.in_waiting > 0:
 
-        if control == 0:
-            a_data = unpack_from("=10f", data, 0)
-            v_data = unpack_from("=10f", data, 40)
+                header = self.ser.read(1)
+                if not header:
+                    return None
 
-            if self.queue:
-                self.queue.push({"A": a_data[-1], "V": v_data[-1]})
+                byte = header[0]
 
-            return a_data, v_data
 
-        elif control == 1:
-            print("PARAM VERIFY PACKET RECEIVED")
+                if self.waiting_for_echo and 1 <= byte <= 8 and self.ser.in_waiting >= self.ECHO_LEN - 1:
+
+                    rest = self.ser.read(self.ECHO_LEN - 1)
+                    raw = bytes([byte]) + rest
+
+                    decoded = unpack_from(self.ECHO_FMT, raw)
+
+                    labels = [
+                        "Mode","LRL","URL",
+                        "Atrial Amplitude","Atrial Pulse Width","Atrial Sensitivity",
+                        "Ventricular Amplitude","Ventricular Pulse Width","Ventricular Sensitivity",
+                        "VRP","ARP","PVARP",
+                        "Maximum Sensor Rate","Reaction Time","Response Factor","Recovery Time",
+                        "Activity Threshold"
+                    ]
+
+                    parsed = dict(zip(labels, decoded))
+
+                    print("[ECHO RECEIVED]")
+                    for k, v in parsed.items():
+                        print(f"{k}: {v}")
+
+                    return parsed
+
+
+                if self.waiting_for_ecg and byte == ECG_HEADER:
+
+                    if self.ser.in_waiting < ECG_PACKET_LEN:
+                        return None
+
+                    payload = self.ser.read(ECG_PACKET_LEN)
+
+                    samples = unpack_from("=20f", payload)
+                    a = samples[:10]
+                    v = samples[10:]
+
+                    print("[ECG RECEIVED]")
+                    print("A:", a)
+                    print("V:", v)
+
+                    if self.queue:
+                        self.queue.push({"A": a[-1], "V": v[-1]})
+
+                    return a, v
+
+
+                else:
+                    # Drop garbage byte and resync
+                    continue
 
         return None
-
-
-    def _log(self, username, mode, params, packet):
-        path = "uart_log.json"
-        entry = {
-            "username": username,
-            "mode": mode,
-            "packet_hex": packet.hex(),
-            "params": params,
-            "timestamp": datetime.now().isoformat(timespec="seconds")
-        }
-
-        try:
-            if os.path.exists(path):
-                with open(path, "r") as f:
-                    data = json.load(f)
-            else:
-                data = []
-        except:
-            data = []
-
-        data.append(entry)
-
-        with open(path, "w") as f:
-            json.dump(data, f, indent=2)
