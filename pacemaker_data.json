@@ -61,11 +61,17 @@
                 "PVARP": 250.0,
                 "Hysteresis": 0,
                 "Rate Smoothing": 0.0
+            },
+            "VOO": {
+                "Lower Rate Limit": 60,
+                "Upper Rate Limit": 120,
+                "Ventricular Amplitude": 5.0,
+                "Ventricular Pulse Width": 1.0
             }
         }
     },
     "states": {
-        "1": "VVIR"
+        "1": "VOO"
     },
     "devices": {}
 }

@@ -4,17 +4,14 @@ import serial.tools.list_ports
 from struct import pack, unpack_from, calcsize
 from threading import Lock
 
-
 MODE_BITMASK = {
     "AOO": 1, "VOO": 2, "AAI": 3, "VVI": 4,
     "AOOR": 5, "VOOR": 6, "AAIR": 7, "VVIR": 8
 }
 
-ECG_FLOATS = 20
-ECG_PACKET_LEN = calcsize("=20f")
-
-ECG_HEADER = 0xAA   # Must match FPGA
-
+HDR1 = 0xAA
+HDR2 = 0x55
+ECG_HDR = 0xEE
 
 class UARTComm:
 
@@ -24,66 +21,48 @@ class UARTComm:
         self.baudrate = baudrate
         self.ser = None
         self.lock = Lock()
-
         self.waiting_for_echo = False
         self.waiting_for_ecg = False
-
         self.ECHO_FMT = "=BBB6f3H5B"
         self.ECHO_LEN = calcsize(self.ECHO_FMT)
 
-
     def connect(self):
         ports = list(serial.tools.list_ports.comports())
-
         if not ports:
             print("NO SERIAL DEVICES FOUND")
             return False
-
         for p in ports:
             try:
-                self.ser = serial.Serial(p.device, self.baudrate, timeout=0.1)
+                self.ser = serial.Serial(p.device, self.baudrate, timeout=0.3)
                 print("CONNECTED:", p.device)
                 return True
-            except Exception as e:
-                print("FAILED:", p.device, e)
-
+            except:
+                pass
         print("NO WORKING SERIAL PORT")
         return False
-
 
     def disconnect(self):
         if self.ser:
             self.ser.close()
             self.ser = None
 
-
     def send_to_device(self, username):
         mode = self.db.get_state(username)
         params = self.db.get_parameters(username, state_name=mode)
-
         if not self.ser or not self.ser.is_open:
             raise Exception("Device not connected")
-
         packet = self._build_packet(mode, params)
-
         with self.lock:
-            self.ser.reset_input_buffer()
             self.ser.reset_output_buffer()
             self.ser.write(packet)
             self.ser.flush()
-
         self.waiting_for_echo = True
         self.waiting_for_ecg = True
-
         print("TX:", packet.hex())
         print("MODE SENT:", mode)
-
         return packet
 
-
-
     def _build_packet(self, mode, params):
-
         full = {
             "Lower Rate Limit": 60,
             "Upper Rate Limit": 120,
@@ -102,7 +81,6 @@ class UARTComm:
             "Recovery Time": 5,
             "Activity Threshold": 4
         }
-
         if params:
             full.update(params)
 
@@ -136,70 +114,44 @@ class UARTComm:
             int(full["Activity Threshold"])
         ]
 
-        return pack(self.ECHO_FMT, *values)
-
+        payload = pack(self.ECHO_FMT, *values)
+        framed = bytes([HDR1, HDR2]) + payload
+        return framed
 
     def poll_egram(self):
         if not self.ser or not self.ser.is_open:
             return None
 
-        if not (self.waiting_for_echo or self.waiting_for_ecg):
-            return None
-
         with self.lock:
+            while self.ser.in_waiting:
+                byte = self.ser.read(1)[0]
 
-            while self.ser.in_waiting > 0:
+                if byte == HDR1:
+                    if self.ser.in_waiting and self.ser.read(1)[0] == HDR2:
+                        if self.ser.in_waiting < self.ECHO_LEN:
+                            return None
+                        payload = self.ser.read(self.ECHO_LEN)
+                        decoded = unpack_from(self.ECHO_FMT, payload)
+                        self.waiting_for_echo = False
+                        labels = [
+                            "Mode","LRL","URL",
+                            "Atrial Amplitude","Atrial Pulse Width","Atrial Sensitivity",
+                            "Ventricular Amplitude","Ventricular Pulse Width","Ventricular Sensitivity",
+                            "VRP","ARP","PVARP",
+                            "Maximum Sensor Rate","Reaction Time","Response Factor","Recovery Time",
+                            "Activity Threshold"
+                        ]
+                        return dict(zip(labels, decoded))
 
-                header = self.ser.read(1)
-                if not header:
-                    return None
-
-                byte = header[0]
-
-
-                if self.waiting_for_echo and 1 <= byte <= 8 and self.ser.in_waiting >= self.ECHO_LEN - 1:
-
-                    rest = self.ser.read(self.ECHO_LEN - 1)
-                    raw = bytes([byte]) + rest
-
-                    decoded = unpack_from(self.ECHO_FMT, raw)
-
-                    labels = [
-                        "Mode","LRL","URL",
-                        "Atrial Amplitude","Atrial Pulse Width","Atrial Sensitivity",
-                        "Ventricular Amplitude","Ventricular Pulse Width","Ventricular Sensitivity",
-                        "VRP","ARP","PVARP",
-                        "Maximum Sensor Rate","Reaction Time","Response Factor","Recovery Time",
-                        "Activity Threshold"
-                    ]
-
-                    parsed = dict(zip(labels, decoded))
-
-                    print("[ECHO RECEIVED]")
-                    for k, v in parsed.items():
-                        print(f"{k}: {v}")
-
-                    return parsed
-
-
-                if self.waiting_for_ecg:
-
-                    a_raw = byte
-
-                    if self.ser.in_waiting < 1:
+                if byte == ECG_HDR:
+                    if self.ser.in_waiting < 2:
                         return None
-
+                    a_raw = self.ser.read(1)[0]
                     v_raw = self.ser.read(1)[0]
-
                     a_val = (a_raw / 255.0) * 5.0
                     v_val = (v_raw / 255.0) * 5.0
-
                     if self.queue:
                         self.queue.push({"A": a_val, "V": v_val})
-
                     return a_val, v_val
-
-                else:
-                    continue
 
         return None
