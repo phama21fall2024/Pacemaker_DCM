@@ -10,20 +10,22 @@ from matplotlib.figure import Figure
 
 class FloatQueue:
     def __init__(self, max_store=5000):
-        self.buffer = deque()
-        self.history = []
-        self.max_store = max_store
+        self.buffer = deque()      # live queue for plotting
+        self.history = []          # saved data for reports
+        self.max_store = max_store # max history length
 
     def push(self, sample):
+        # Ensure valid dictionary format
         if not isinstance(sample, dict):
             return
 
+        # Must contain at least one channel
         if "A" not in sample and "V" not in sample:
             return
 
         self.buffer.append(sample.copy())
 
-        # Save for reports (limit size)
+        # Save sample history (bounded)
         if len(self.history) < self.max_store:
             self.history.append(sample.copy())
 
@@ -42,18 +44,18 @@ class FloatQueue:
         self.history.clear()
 
 
-
-
 class EgramGraph(tk.Frame):
     def __init__(self, parent, queue, mode):
         super().__init__(parent)
-        self.queue = queue
-        self.mode = mode
+        self.queue = queue     # input data queue
+        self.mode = mode      # A, V, or BOTH
 
+        # graph buffer sizes
         self.max_points = 1000
         self.atrium_data = deque([0.0] * self.max_points, maxlen=self.max_points)
         self.vent_data = deque([0.0] * self.max_points, maxlen=self.max_points)
 
+        # create figure layout based on mode
         if self.mode == "BOTH":
             self.fig = Figure(figsize=(7, 4), dpi=100)
             self.axA = self.fig.add_subplot(211)
@@ -62,24 +64,27 @@ class EgramGraph(tk.Frame):
             self.fig = Figure(figsize=(7, 3), dpi=100)
             self.ax = self.fig.add_subplot(111)
 
+        # embed matplotlib into tkinter
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas_widget = self.canvas.get_tk_widget()
         self.canvas_widget.pack(fill="both", expand=True)
 
+        # start update loop
         self.after(50, self.update_plot)
 
     def hide_numbers_keep_labels(self, axis):
-        axis.set_xticklabels([])   # remove x numbers
-
-        axis.tick_params(axis='both', length=4)  
+        axis.set_xticklabels([])        # remove x-axis values
+        axis.tick_params(axis='both', length=4)
 
     def update_plot(self):
-        
+
+        # generate fake data if no real input present
         if self.queue.empty():
             fakeA = random.uniform(0, 5)
             fakeV = random.uniform(0, 5)
             self.queue.push({"A": fakeA, "V": fakeV})
 
+        # consume all queued samples
         while not self.queue.empty():
             sample = self.queue.pop()
             a_val = sample.get("A")
@@ -89,6 +94,7 @@ class EgramGraph(tk.Frame):
             if v_val is not None:
                 self.vent_data.append(float(v_val))
 
+        # BOTH channels display
         if self.mode == "BOTH":
             self.axA.clear()
             self.axV.clear()
@@ -99,40 +105,37 @@ class EgramGraph(tk.Frame):
             self.axA.set_ylim(0, 5)
             self.axV.set_ylim(0, 5)
 
-            self.axA.invert_xaxis()   
+            self.axA.invert_xaxis()
             self.axV.invert_xaxis()
 
-            # axis names preserved
             self.axA.set_ylabel("Atrial")
             self.axV.set_ylabel("Ventricular")
             self.axV.set_xlabel("Samples")
 
-            # remove numeric labels only
             self.hide_numbers_keep_labels(self.axA)
             self.hide_numbers_keep_labels(self.axV)
 
+        # Atrial only
         elif self.mode == "A":
             self.ax.clear()
             self.ax.plot(list(self.atrium_data))
             self.ax.set_ylim(0, 5)
             self.ax.invert_xaxis()
-
             self.ax.set_ylabel("Atrial")
             self.ax.set_xlabel("Samples")
-
             self.hide_numbers_keep_labels(self.ax)
 
+        # Ventricular only
         elif self.mode == "V":
             self.ax.clear()
             self.ax.plot(list(self.vent_data))
             self.ax.set_ylim(0, 5)
-            self.ax.invert_xaxis() 
-
+            self.ax.invert_xaxis()
             self.ax.set_ylabel("Ventricular")
             self.ax.set_xlabel("Samples")
-
             self.hide_numbers_keep_labels(self.ax)
 
+        # refresh canvas
         self.canvas.draw_idle()
         self.after(50, self.update_plot)
 
@@ -144,17 +147,17 @@ def open_egram_window(root, queue, channel_mode="BOTH"):
     win.title(f"Egram - {mode}")
     win.geometry("900x500")
 
+    # attach graph widget
     graph = EgramGraph(win, queue, mode)
     graph.pack(fill="both", expand=True)
 
     return win
 
+
 def embed_live_egram(parent, queue, mode):
-    # Clear previous embedded plots
+    # remove any existing plots
     for w in parent.winfo_children():
         w.destroy()
 
     graph = EgramGraph(parent, queue, mode)
     graph.pack(fill="both", expand=True)
-
-
